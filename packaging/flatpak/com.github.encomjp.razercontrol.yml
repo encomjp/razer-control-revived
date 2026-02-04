@@ -1,6 +1,6 @@
 app-id: com.github.encomjp.razercontrol
 runtime: org.gnome.Platform
-runtime-version: '47'
+runtime-version: '48'
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
@@ -21,6 +21,13 @@ finish-args:
 modules:
   - name: razer-control
     buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      build-args:
+        - --share=network
+      env:
+        CARGO_HOME: /run/build/razer-control/cargo
+        RUST_BACKTRACE: '1'
     build-commands:
       - cd razer_control_gui && cargo build --release --manifest-path Cargo.toml
       - install -D -m 755 razer_control_gui/target/release/razer-settings /app/bin/razer-settings
@@ -31,8 +38,3 @@ modules:
     sources:
       - type: dir
         path: ../../
-    build-options:
-      append-path: /usr/lib/sdk/rust-stable/bin
-      env:
-        CARGO_HOME: /run/build/razer-control/cargo
-        RUST_BACKTRACE: '1'
