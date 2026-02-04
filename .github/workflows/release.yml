@@ -58,9 +58,10 @@ jobs:
           # Spec expects razercontrol-revived-0.1.0.tar.gz
           # We'll repackage current directory
           mkdir -p razercontrol-revived-0.1.0
-          cp -r ./* razercontrol-revived-0.1.0/ 2>/dev/null || :
-          # Exclude the directory itself to avoid recursion if copying indiscriminately
-          tar --exclude='razercontrol-revived-0.1.0' -czf ~/rpmbuild/SOURCES/razercontrol-revived-0.1.0.tar.gz razercontrol-revived-0.1.0
+          # Copy all files into the directory, ignoring the recursion error
+          cp -r * razercontrol-revived-0.1.0/ || :
+          # Create the tarball including the directory
+          tar -czf ~/rpmbuild/SOURCES/razercontrol-revived-0.1.0.tar.gz razercontrol-revived-0.1.0
       - name: Build RPM
         run: |
           rpmbuild -bb packaging/fedora/razercontrol.spec
