@@ -1,150 +1,166 @@
-use std::cell::Cell;
-
+use gtk4 as gtk;
+use libadwaita as adw;
 use gtk::prelude::*;
-use gtk::{
-    Box, Frame, Label, ListBox, ListBoxRow, Separator, Widget, Grid
-};
+use adw::prelude::*;
 
 pub struct SettingsPage {
-    // TODO: Can I make this a widget? This is self originally
-    pub master_container: Box
+    pub page: adw::PreferencesPage,
 }
 
 impl SettingsPage {
-    
-    pub fn new() -> SettingsPage {
-        let master_container = Box::new(gtk::Orientation::Vertical, 15);
-        master_container.set_margin_start(80);
-        master_container.set_margin_end(80);
-        master_container.set_margin_top(15);
-        master_container.set_margin_bottom(15);
-
+    pub fn new() -> Self {
         SettingsPage {
-            master_container
+            page: adw::PreferencesPage::new(),
         }
     }
 
     pub fn add_section(&self, title: Option<&str>) -> SettingsSection {
-        let section = SettingsSection::new(title);
-        self.master_container.pack_start(&section.master_container, false, false, 0);
-        section
-    }
-
-}
-
-pub struct SettingsRow {
-    // TODO: Can I make this a widget? This is self originally
-    pub master_container: ListBoxRow
-}
-
-impl SettingsRow {
-    
-    pub fn new(
-        label: &impl IsA<Widget>,
-        main_widget: &impl IsA<Widget>,
-        // alternative_widget: Option<&impl IsA<Widget>>
-    ) -> SettingsRow {
-        let master_container = ListBoxRow::new();
-
-        // TODO: Faltan cosas, hay un stack que IMO no tiene sentido por ahora
-
-        let hbox = Box::new(gtk::Orientation::Horizontal, 0);
-        hbox.set_border_width(5);
-        hbox.set_margin_start(20);
-        hbox.set_margin_end(20);
-        // master_container.add(&hbox);
-
-        let grid = Grid::new();
-        grid.set_column_spacing(15);
-        // hbox.pack_start(&grid, true, true, 0);
-
-        let description_box = Box::new(gtk::Orientation::Vertical, 0);
-        description_box.set_hexpand(true);
-        description_box.set_halign(gtk::Align::Start);
-        description_box.set_valign(gtk::Align::Center);
-        // self.label.props.xalign = 0.0
-        description_box.add(label);
-
-        grid.attach(&description_box, 0, 0, 1, 1);
-        grid.attach_next_to(main_widget /*stack*/, Some(&description_box), gtk::PositionType::Right, 1, 1);
-        hbox.add(&grid); // TODO: No es así como lo hacen
-        
-        master_container.add(&hbox);
-
-        SettingsRow {
-            master_container
+        let group = adw::PreferencesGroup::new();
+        if let Some(t) = title {
+            group.set_title(t);
         }
+        self.page.add(&group);
+        SettingsSection { group }
     }
-
-    pub fn add_section(&self, title: Option<&str>) -> SettingsSection {
-        let section = SettingsSection::new(title);
-        // self.master_container.pack_start(&section.master_container, false, false, 0); TODO: It should be this
-        self.master_container.add(&section.master_container);
-        section
-    }
-
 }
 
 pub struct SettingsSection {
-    // TODO: Can I make this a widget? This is self originally
-    pub master_container: Box,
-    container: Box,
-    frame: Frame,
-    need_separator: Cell<bool>
+    pub group: adw::PreferencesGroup,
 }
 
 impl SettingsSection {
-
-    pub fn new(title: Option<&str>) -> SettingsSection {
-        let master_container = Box::new(gtk::Orientation::Vertical, 10);
-
-        if let Some(title) = title {
-            let header_box = Box::new(gtk::Orientation::Vertical, 0);
-            header_box.set_spacing(5);
-            master_container.add(&header_box);
-
-            let label = Label::new(None);
-            label.set_markup(&format!("<b>{}</b>", title));
-            // Aligmnent 0, 0.5
-            label.set_halign(gtk::Align::Start);
-            header_box.add(&label);
-        }
-
-        let frame = Frame::new(None);
-        frame.set_shadow_type(gtk::ShadowType::In);
-        frame.style_context().add_class("view");
-        // bho_frame.set_hexpand(true);
-        // Algo de size group
-
-        let container = Box::new(gtk::Orientation::Vertical, 0);
-        frame.add(&container);
-
-        SettingsSection {
-            master_container,
-            container,
-            frame,
-            need_separator: Cell::new(false)
-        }
+    pub fn add_row(&self, row: &impl IsA<gtk::Widget>) {
+        self.group.add(row);
     }
+}
 
-    pub fn add_row(&self, widget: &impl IsA<Widget>) {
-        let vbox = Box::new(gtk::Orientation::Vertical, 0);
+pub struct SettingsRow {
+    pub row: adw::ActionRow,
+}
 
-        if self.need_separator.get() {
-            let separator = Separator::new(gtk::Orientation::Horizontal);
-            vbox.add(&separator);
+impl SettingsRow {
+    pub fn new(title: &str, widget: &impl IsA<gtk::Widget>) -> Self {
+        let row = adw::ActionRow::new();
+        row.set_title(title);
+        row.add_suffix(widget);
+        SettingsRow { row }
+    }
+    
+    pub fn set_subtitle(&self, subtitle: &str) {
+        self.row.set_subtitle(subtitle);
+    }
+}
+
+/// A row specifically designed for sliders/scales that need full width
+pub struct SliderRow {
+    pub container: gtk::Box,
+    pub scale: gtk::Scale,
+}
+
+impl SliderRow {
+    pub fn new(title: &str, subtitle: &str, min: f64, max: f64, step: f64, value: f64) -> Self {
+        let container = gtk::Box::new(gtk::Orientation::Vertical, 8);
+        container.set_margin_top(12);
+        container.set_margin_bottom(12);
+        container.set_margin_start(12);
+        container.set_margin_end(12);
+        
+        // Title label
+        let title_label = gtk::Label::new(Some(title));
+        title_label.set_halign(gtk::Align::Start);
+        title_label.add_css_class("heading");
+        container.append(&title_label);
+        
+        // Subtitle label
+        if !subtitle.is_empty() {
+            let subtitle_label = gtk::Label::new(Some(subtitle));
+            subtitle_label.set_halign(gtk::Align::Start);
+            subtitle_label.add_css_class("dim-label");
+            subtitle_label.add_css_class("caption");
+            container.append(&subtitle_label);
         }
+        
+        // Scale widget
+        let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, min, max, step);
+        scale.set_value(value);
+        scale.set_hexpand(true);
+        scale.set_draw_value(true);
+        scale.set_value_pos(gtk::PositionType::Right);
+        scale.set_digits(0);
+        container.append(&scale);
+        
+        SliderRow { container, scale }
+    }
+    
+    pub fn add_mark(&self, value: f64, label: Option<&str>) {
+        self.scale.add_mark(value, gtk::PositionType::Bottom, label);
+    }
+}
 
-        let list_box = ListBox::new();
-        list_box.set_selection_mode(gtk::SelectionMode::None);
-        list_box.add(widget);
-        vbox.add(&list_box);
-        self.container.add(&vbox);
+/// A row with a switch on the right side
+pub struct SwitchRow {
+    pub row: adw::ActionRow,
+    pub switch: gtk::Switch,
+}
 
-        if self.frame.parent().is_none() {
-            self.master_container.add(&self.frame);
+impl SwitchRow {
+    pub fn new(title: &str, subtitle: &str, active: bool) -> Self {
+        let row = adw::ActionRow::new();
+        row.set_title(title);
+        row.set_subtitle(subtitle);
+        
+        let switch = gtk::Switch::new();
+        switch.set_active(active);
+        switch.set_valign(gtk::Align::Center);
+        row.add_suffix(&switch);
+        row.set_activatable_widget(Some(&switch));
+        
+        SwitchRow { row, switch }
+    }
+}
+
+/// A row with a combo box on the right side  
+pub struct ComboRow {
+    pub row: adw::ActionRow,
+    pub combo: gtk::ComboBoxText,
+}
+
+impl ComboRow {
+    pub fn new(title: &str, subtitle: &str, options: &[&str], active: u32) -> Self {
+        let row = adw::ActionRow::new();
+        row.set_title(title);
+        row.set_subtitle(subtitle);
+        
+        let combo = gtk::ComboBoxText::new();
+        for opt in options {
+            combo.append_text(opt);
         }
+        combo.set_active(Some(active));
+        combo.set_valign(gtk::Align::Center);
+        row.add_suffix(&combo);
+        
+        ComboRow { row, combo }
+    }
+}
 
-        self.need_separator.set(true);
+/// A row with a color button
+pub struct ColorRow {
+    pub row: adw::ActionRow,
+    pub button: gtk::ColorButton,
+}
+
+impl ColorRow {
+    pub fn new(title: &str, subtitle: &str) -> Self {
+        let row = adw::ActionRow::new();
+        row.set_title(title);
+        row.set_subtitle(subtitle);
+        
+        let button = gtk::ColorButton::new();
+        button.set_use_alpha(false);
+        button.set_valign(gtk::Align::Center);
+        row.add_suffix(&button);
+        row.set_activatable_widget(Some(&button));
+        
+        ColorRow { row, button }
     }
 }

@@ -36,7 +36,8 @@ systemstat = "0.2.3"
 hidapi = { version = "2.4.1", default-features = false, features = ["linux-native"] }
 serde-big-array = "0.5.1"
 clap = { version = "4.4.13", features = ["derive"] }
-gtk = "0.18.1"
-glib = "0.19.7"
+gtk4 = "0.9"
+libadwaita = "0.7"
+glib = "0.20"
 log = "0.4.22"
 env_logger = "0.11.5"

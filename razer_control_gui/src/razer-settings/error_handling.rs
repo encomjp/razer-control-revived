@@ -1,5 +1,5 @@
-use gtk::prelude::*;
-use gtk::{ApplicationWindow, DialogFlags, MessageDialog};
+use gtk4::prelude::*;
+use gtk4::{ApplicationWindow, DialogFlags, MessageDialog};
 
 pub trait Crash {
     type Value;
@@ -38,15 +38,20 @@ pub fn crash_with_msg(msg: impl AsRef<str>) -> ! {
 
 fn show_msg(msg: impl AsRef<str>) {
     let msg = format!("{}.\n\nThis is an alpha!", msg.as_ref());
-
-    let msg_box = MessageDialog::new::<ApplicationWindow>(
-        None, DialogFlags::MODAL,
-        gtk::MessageType::Error, gtk::ButtonsType::Ok,
-        &msg
-    );
-    msg_box.set_title("The application has crashed");
-
-    let _response = msg_box.run();
+    
+    // GTK4 note: MessageDialog::run() is deprecated
+    // In a full GTK4 implementation, this should use async dialogs
+    // For now, just print to stderr
+    eprintln!("ERROR: {}", msg);
+    
+    // Optional: Use MessageDialog without run() method
+    // let msg_box = MessageDialog::new(
+    //     None::<&ApplicationWindow>, DialogFlags::MODAL,
+    //     gtk4::MessageType::Error, gtk4::ButtonsType::Ok,
+    //     &msg
+    // );
+    // msg_box.set_title(Some("The application has crashed"));
+    // msg_box.present();
 }
 
 /// Installs a custom panic hook to display an error to the user
