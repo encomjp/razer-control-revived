@@ -7,7 +7,7 @@ License:        GPLv2
 URL:            https://github.com/encomjp/razer-control-revived
 Source0:        %{name}-%{version}.tar.gz
 
-BuildRequires:  rust-packaging
+BuildRequires:  rust
 BuildRequires:  cargo
 BuildRequires:  dbus-devel
 BuildRequires:  libusb1-devel
