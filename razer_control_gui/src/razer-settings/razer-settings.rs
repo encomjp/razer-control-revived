@@ -274,6 +274,14 @@ fn main() {
     setup_panic_hook();
     gtk::init().or_crash("Failed to initialize GTK.");
 
+    let provider = gtk::CssProvider::new();
+    provider.load_from_data(include_bytes!("../style.css")).ok();
+    gtk::StyleContext::add_provider_for_screen(
+        &gtk::gdk::Screen::default().expect("Error initializing gtk css provider."),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
+
     let device_file = std::fs::read_to_string(service::DEVICE_FILE)
         .or_crash("Failed to read the device file");
     let devices: Vec<SupportedDevice> = serde_json::from_str(&device_file)
@@ -693,12 +701,7 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
     // About page
     let settings_section = page.add_section(Some("Razer Laptop Control"));
         let label = Label::new(Some("Project"));
-        let url = LinkButton::with_label("https://github.com/JosuGZ/razer-laptop-control", "Project repository");
-    let row = SettingsRow::new(&label, &url);
-    settings_section.add_row(&row.master_container);
-        let report_bug_url = "https://github.com/JosuGZ/razer-laptop-control/issues/new?labels=bug&template=bug_report.md&title=%5BBUG%5D";
-        let label = Label::new(Some("Bug reports"));
-        let url = LinkButton::with_label(report_bug_url, "Report bug");
+        let url = LinkButton::with_label("https://github.com/encomjp/razer-control-revived", "Project repository");
     let row = SettingsRow::new(&label, &url);
     settings_section.add_row(&row.master_container);
 

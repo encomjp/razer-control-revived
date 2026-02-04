@@ -1,0 +1,142 @@
+/* Global variables */
+@define-color bg_color #1e1e1e;
+@define-color fg_color #eeeeee;
+@define-color base_color #2d2d2d;
+@define-color accent_color #44d62c; /* Razer Green */
+@define-color accent_fg_color #000000;
+@define-color border_color #444444;
+
+/* Reset and Base Styles */
+* {
+    background-origin: border-box;
+    background-clip: padding-box;
+    -GtkWidget-window-dragging: true;
+}
+
+window {
+    background-color: @bg_color;
+    color: @fg_color;
+    font-family: "Inter", "Segoe UI", sans-serif;
+    font-size: 11pt;
+}
+
+/* Typography */
+label {
+    color: @fg_color;
+    font-weight: 500;
+}
+
+label:disabled {
+    color: mix(@fg_color, @bg_color, 0.5);
+}
+
+/* Buttons */
+button {
+    background-color: @base_color;
+    color: @fg_color;
+    border: 1px solid @border_color;
+    border-radius: 6px;
+    padding: 6px 12px;
+    transition: all 200ms ease-in-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+button:hover {
+    background-color: mix(@base_color, @fg_color, 0.1);
+    border-color: mix(@border_color, @fg_color, 0.2);
+    box-shadow: 0 1px 3px rgba(0,255,0,0.2); /* Subtle green glow on hover */
+}
+
+button:active {
+    background-color: @accent_color;
+    color: @accent_fg_color;
+    border-color: darken(@accent_color, 0.1);
+}
+
+/* Switches */
+switch {
+    margin: 8px;
+}
+
+switch slider {
+    border-radius: 50%;
+    margin: 2px;
+    min-width: 20px;
+    min-height: 20px;
+    background-color: @fg_color;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+switch:checked {
+    background-color: @accent_color;
+    color: @accent_fg_color;
+}
+
+switch:checked slider {
+    background-color: @fg_color;
+}
+
+/* Scales (Sliders) */
+scale trough {
+    background-color: @base_color;
+    border-radius: 4px;
+    min-height: 6px;
+}
+
+scale highlight {
+    background-color: @accent_color;
+    border-radius: 4px;
+}
+
+scale slider {
+    background-color: @fg_color;
+    min-width: 18px;
+    min-height: 18px;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    margin: -6px 0; /* Center slider on track */
+}
+
+/* Stack Switcher (Tabs) */
+stackswitcher {
+    margin: 10px;
+}
+
+stackswitcher button {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+stackswitcher button:checked {
+    background-color: transparent;
+    color: @accent_color;
+    border-bottom: 2px solid @accent_color;
+    box-shadow: none;
+}
+
+stackswitcher button:hover {
+    color: mix(@fg_color, @accent_color, 0.5);
+    background-color: transparent;
+    box-shadow: none;
+}
+
+/* Boxes and Layout */
+.raised {
+    background-color: @base_color;
+    border-bottom: 1px solid @border_color;
+    padding: 10px;
+}
+
+/* Custom class for sections if added later */
+.section-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: @accent_color;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
