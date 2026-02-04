@@ -1,0 +1,27 @@
+app-id: com.github.encomjp.razercontrol
+runtime: org.gnome.Platform
+runtime-version: '46'
+sdk: org.gnome.Sdk
+command: razer-settings
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=all
+  - --filesystem=xdg-run/razercontrol
+  - --share=network
+modules:
+  - name: razer-control
+    buildsystem: simple
+    build-commands:
+      - cargo build --release
+      - install -D -m 755 target/release/razer-settings /app/bin/razer-settings
+      - install -D -m 755 target/release/razer-cli /app/bin/razer-cli
+      - install -D -m 755 target/release/daemon /app/bin/razer-daemon
+    sources:
+      - type: dir
+        path: ../../
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/razer-control/cargo
