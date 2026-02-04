@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          flatpak install org.gnome.Sdk//46 org.gnome.Platform//46 -y
+          flatpak install org.gnome.Sdk//46 org.gnome.Platform//46 org.freedesktop.Sdk.Extension.rust-stable//23.08 -y
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
