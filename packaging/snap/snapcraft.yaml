@@ -1,5 +1,5 @@
 name: razer-control
-base: core22
+base: core24
 version: '0.1.0'
 summary: Razer Laptop Control Revived
 description: |
@@ -10,12 +10,6 @@ description: |
 grade: stable
 confinement: strict
 
-plugs:
-  hidraw:
-  raw-usb:
-  system-observe:
-  hardware-observe:
-  
 parts:
   razer-control:
     plugin: rust
