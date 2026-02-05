@@ -1,12 +1,45 @@
 # Razer Laptop Control - Revived
 
 [![License: GPL-2.0](https://img.shields.io/badge/License-GPL%202.0-blue.svg)](LICENSE)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/donate/?hosted_button_id=H4SCC24R8KS4A)
 
 A Linux userspace application to control Razer Blade laptops. **No kernel modules (DKMS) required!**
 
 This tool provides more control over your Razer laptop than Synapse does - fan curves, power profiles, CPU/GPU boost, battery health optimization, and RGB effects all in one place.
 
 > **⚠️ DISCLAIMER:** This is experimental community software. Use at your own risk. No warranty is provided.
+
+## 📥 Downloads
+
+Pre-compiled binaries are available on the [Releases](https://github.com/encomjp/razercontrol-revived/releases) page:
+
+| Package | Best For | Description |
+|---------|----------|-------------|
+| `razercontrol-*.rpm` | **Fedora / RHEL** | Complete RPM package - installs everything |
+| `RazerControl-*.AppImage` | **All distros** | Universal portable GUI (needs daemon) |
+| `razer-control-*.tar.gz` | **Manual install** | Tarball with install script |
+
+### Fedora / RHEL (Recommended)
+```bash
+sudo dnf install ./razercontrol-0.2.0-1.fc43.x86_64.rpm
+```
+
+### All Other Distributions (AppImage)
+
+Install the daemon first, then use the portable AppImage for the GUI:
+
+```bash
+# 1. Install daemon from tarball
+tar -xzf razer-control-0.2.0-x86_64.tar.gz
+cd razer-control-0.2.0-x86_64
+sudo ./install.sh
+
+# 2. Run the AppImage
+chmod +x RazerControl-0.2.0-x86_64.AppImage
+./RazerControl-0.2.0-x86_64.AppImage
+```
+
+> **Note:** Log out and back in (or reboot) after installation for udev rules to take effect.
 
 ## ✨ Features
 
@@ -102,7 +135,25 @@ cd razercontrol-revived/razer_control_gui
 
 After installation, **log out and back in** (or reboot) for udev rules to take effect.
 
-## 🚀 Usage
+## �️ KDE Plasma Widget
+
+A native KDE Plasma 6 widget is available for quick access from your panel.
+
+### Install the Widget
+
+```bash
+cd razer_control_gui/kde-widget
+./install-plasmoid.sh
+```
+
+Then add it to your panel: Right-click panel → Add Widgets → Search "Razer Control"
+
+- **Left-click**: Opens Razer Settings
+- **Right-click**: Quick menu with donation link
+
+See [kde-widget/README.md](razer_control_gui/kde-widget/README.md) for more details.
+
+## �🚀 Usage
 
 ### GUI Application
 

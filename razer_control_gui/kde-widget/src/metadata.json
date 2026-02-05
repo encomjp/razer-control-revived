@@ -1,0 +1,18 @@
+{
+    "KPlugin": {
+        "Icon": "preferences-system-power-management",
+        "Name": "Razer Control",
+        "Description": "Control your Razer laptop from the system tray",
+        "ServiceTypes": [
+            "Plasma/Applet"
+        ],
+        "Category": "System Information"
+    },
+    "X-KDE-DBusActivation": false,
+    "X-KDE-PluginInfo-Author": "Encomjp",
+    "X-KDE-PluginInfo-Email": "",
+    "X-KDE-PluginInfo-License": "GPL-2.0+",
+    "X-KDE-PluginInfo-Name": "com.github.encomjp.razercontrol",
+    "X-KDE-PluginInfo-Version": "0.2.0",
+    "X-KDE-PluginInfo-Website": "https://github.com/encomjp/razer-control"
+}

@@ -1,0 +1,338 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                  🎮 Razer Control KDE Widget 🎮                              ║
+║                                                                              ║
+║                    Complete Installation & Usage Guide                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+🚀 QUICK START (5 MINUTES)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Install the widget:
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │ $ cd razer_control_gui/kde-widget                                         │
+   │ $ bash install.sh                                                         │
+   └──────────────────────────────────────────────────────────────────────────┘
+
+2. Add widget to panel:
+   • Right-click your Plasma panel (bottom of screen)
+   • Select "Add Widgets..."
+   • Search for "Razer Control"
+   • Click to add
+
+3. Use the widget:
+   • Left-click → Open full Razer Settings
+   • Right-click → Quick control menu
+   • Hover → See battery % and device info
+
+Done! Your widget is ready to use. 🎉
+
+
+📖 DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Quick Reference:
+  • 00-START-HERE.md       ← Complete project overview
+  • INDEX.md               ← All documentation index
+  • QUICKSTART.md          ← 5-minute setup guide
+  
+Complete Guides:
+  • README.md              ← Full technical documentation
+  • CONFIGURATION.md       ← All settings and options
+  • ARCHITECTURE.md        ← System design details
+  • SUMMARY.md             ← Feature overview
+  • FILES.md               ← File reference
+
+Choose by your interest:
+  Just want to use it?     → Read QUICKSTART.md (5 min)
+  Want to understand it?   → Read SUMMARY.md (10 min)
+  Need technical details?  → Read README.md (20 min)
+
+
+⚡ WHAT YOU GET
+═══════════════════════════════════════════════════════════════════════════════
+
+System Tray Widget Features:
+  ✓ Shows in bottom-right corner (always visible)
+  ✓ Left-click opens full Razer Settings
+  ✓ Right-click shows quick control menu
+  ✓ Hover shows battery % and device name
+
+Quick Menu Options:
+  • Open Settings
+  • Fan Control
+  • Power Profiles
+  • RGB Control
+  • Battery Health
+  • Minimize app
+  • Configuration
+  • Exit
+
+Auto-Start Capabilities:
+  ✓ Launch daemon on system boot
+  ✓ Auto-minimize to system tray
+  ✓ Remember settings between reboots
+  ✓ Easy enable/disable in settings
+
+
+🎯 WIDGET IN SYSTEM TRAY
+═══════════════════════════════════════════════════════════════════════════════
+
+                                  Your Desktop
+    ┌────────────────────────────────────────────────────────────────────┐
+    │                                                                    │
+    │                     Your Applications Here                         │
+    │                                                                    │
+    ├────────────────────────────────────────────────────────────────────┤
+    │  [≡ Menu] [Windows] [Clock] [Razer 🎮] ✕                          │
+    │                                ↑                                   │
+    │                         Our Widget Icon                            │
+    │                    (Bottom-Right Corner)                           │
+    └────────────────────────────────────────────────────────────────────┘
+
+Right-click the widget to see this menu:
+    ┌──────────────────────────────────┐
+    │ Open Settings                    │
+    │ ─────────────────────────────── │
+    │ Fan Control                      │
+    │ Power Profiles                   │
+    │ RGB Control                      │
+    │ Battery Health                   │
+    │ ─────────────────────────────── │
+    │ Minimize                         │
+    │ Configuration                    │
+    │ Exit                             │
+    └──────────────────────────────────┘
+
+Hover over widget to see tooltip:
+    ┌──────────────────────────────┐
+    │ Razer Control                │
+    │ Device: Blade 15 (2023)      │
+    │ Battery: 85%                 │
+    │                              │
+    │ Tip: Click to open settings  │
+    └──────────────────────────────┘
+
+
+⚙️ CONFIGURATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Access widget settings:
+  1. Right-click widget icon
+  2. Select "Configuration"
+  3. Adjust settings:
+     □ Start minimized on boot    (Hides window at startup)
+     □ Auto-start on system boot  (Launches with system)
+     □ Show battery percentage    (Display in tooltip)
+     ◄ Refresh interval: 2 sec ►  (Update frequency)
+  4. Click OK to save
+
+All settings saved automatically to ~/.config/plasmarc
+
+
+🛠️ INSTALLATION OPTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Option 1: Automated (Recommended)
+  $ cd razer_control_gui/kde-widget
+  $ bash install.sh
+  
+  ✓ Checks dependencies
+  ✓ Builds from source
+  ✓ Installs to system
+  ✓ Sets up auto-start
+  ✓ Time: 5-15 minutes
+
+Option 2: Manual (Advanced)
+  $ cd razer_control_gui/kde-widget
+  $ mkdir build && cd build
+  $ cmake ..
+  $ make
+  $ sudo make install
+  $ kbuildsycoca6
+
+
+❓ FREQUENTLY ASKED QUESTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Q: Widget not appearing after installation?
+A: Run: kbuildsycoca6
+   Then restart Plasma: kquitapp6 plasmashell && sleep 2 && kstart6 plasmashell &
+
+Q: How do I start the app minimized?
+A: Enable "Start minimized on boot" in widget configuration
+
+Q: Can I launch on system startup automatically?
+A: Yes, enable "Auto-start on system boot" in configuration
+
+Q: Where are settings saved?
+A: ~/.config/plasmarc (KDE configuration file)
+   ~/.config/autostart/razer-settings.desktop (auto-start entry)
+
+Q: How do I uninstall the widget?
+A: Currently: Manual removal needed (ask in documentation)
+   Planned: Uninstall script in future release
+
+Q: What if daemon isn't running?
+A: Check: systemctl status razercontrol
+   Restart: systemctl restart razercontrol
+   Logs: journalctl -u razercontrol
+
+Q: How often does battery percentage update?
+A: Every 2 seconds by default (configurable 1-10 seconds)
+
+Q: Can I customize the widget icon?
+A: Yes, advanced users can edit package/metadata.json
+
+
+📋 SYSTEM REQUIREMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Build Requirements:
+  • Linux system
+  • GCC/Clang with C++17 support
+  • CMake 3.16+
+  • Qt6 development libraries (or Qt5.15+)
+  • KDE Frameworks development libraries
+
+Runtime Requirements:
+  • KDE Plasma 5.27+ (or Plasma 6.x)
+  • Razer Control daemon installed
+  • Linux kernel with USB HID support
+
+
+🔍 TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue: Widget doesn't show in add-widgets list
+Solution: Run: kbuildsycoca6
+          Then restart Plasma
+
+Issue: Widget shows "Detecting..." for device
+Solution: Check daemon: systemctl status razercontrol
+          View logs: journalctl -u razercontrol -n 50
+
+Issue: Auto-start not working
+Solution: Verify file: cat ~/.config/autostart/razer-settings.desktop
+          Fix permissions: chmod 644 ~/.config/autostart/razer-settings.desktop
+
+Issue: Right-click menu doesn't respond
+Solution: Kill app: pkill razer-settings
+          Restart: razer-settings &
+
+Issue: High CPU usage
+Solution: Increase refresh interval in configuration (e.g., from 2 to 5 seconds)
+
+Full troubleshooting guide: See CONFIGURATION.md
+
+
+✅ INSTALLATION CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Before Installation:
+  ☐ Ensure Razer Control daemon is installed
+  ☐ KDE Plasma is installed and running
+  ☐ You have about 10 minutes for installation
+
+Installation:
+  ☐ Run: bash install.sh
+  ☐ Confirm dependencies are installed
+  ☐ Wait for build to complete
+  ☐ Optionally restart Plasma
+
+Post-Installation:
+  ☐ Right-click panel → Add Widgets
+  ☐ Search for "Razer Control"
+  ☐ Add widget to panel
+  ☐ Left-click widget (should open settings)
+  ☐ Right-click widget (should show menu)
+  ☐ Hover over widget (should show tooltip)
+
+Verification:
+  ☐ Reboot system
+  ☐ Widget appears automatically
+  ☐ Auto-start works (if enabled)
+  ☐ Daemon is running
+  ☐ Battery % displays correctly
+
+
+🎓 LEARNING RESOURCES
+═══════════════════════════════════════════════════════════════════════════════
+
+For Impatient Users (15 minutes):
+  1. This file (GETTING_STARTED.txt) - now reading
+  2. QUICKSTART.md - 5 minutes
+  3. Run installation - 10 minutes
+
+For Regular Users (40 minutes):
+  1. SUMMARY.md - 10 minutes (overview)
+  2. QUICKSTART.md - 5 minutes (setup)
+  3. CONFIGURATION.md - 15 minutes (settings)
+  4. Run installation - 10 minutes
+
+For Developers (1 hour):
+  1. SUMMARY.md - 10 minutes (overview)
+  2. README.md - 20 minutes (technical)
+  3. ARCHITECTURE.md - 20 minutes (design)
+  4. Source code review - 10 minutes
+
+Recommended Reading Order:
+  1. 00-START-HERE.md (if not read yet)
+  2. This file (GETTING_STARTED.txt)
+  3. QUICKSTART.md
+  4. Run installation
+  5. CONFIGURATION.md (for custom setup)
+  6. Other docs as needed
+
+
+📞 SUPPORT
+═══════════════════════════════════════════════════════════════════════════════
+
+Documentation:
+  • All guides in this directory
+  • See CONFIGURATION.md for detailed troubleshooting
+  • See ARCHITECTURE.md for system design
+
+Logs:
+  • Daemon logs: journalctl -u razercontrol
+  • Check auto-start: cat ~/.config/autostart/razer-settings.desktop
+  • View widget config: grep -A 5 "razercontrol" ~/.config/plasmarc
+
+Getting Help:
+  1. Check documentation files
+  2. View error logs (commands above)
+  3. See CONFIGURATION.md troubleshooting section
+  4. Report issues to Razer Control GitHub
+
+
+🚀 NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+Right Now:
+  1. Read: QUICKSTART.md (5 minutes)
+  
+In the Next 10 Minutes:
+  2. Run: bash install.sh
+  
+After Installation:
+  3. Add widget to panel
+  4. Test: Left-click, right-click, hover
+  5. Configure if needed
+
+Enjoy Using Your Widget! 🎉
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Quick Links:
+  • Installation:    bash install.sh
+  • Quick Start:     Read QUICKSTART.md
+  • Full Docs:       Read README.md
+  • Settings:        See CONFIGURATION.md
+  • System Design:   See ARCHITECTURE.md
+  • File Reference:  See FILES.md
+  • Project Summary: See SUMMARY.md
+  • Index:           See INDEX.md
+
+Welcome to Razer Control KDE Widget! 🎮
+
+═══════════════════════════════════════════════════════════════════════════════

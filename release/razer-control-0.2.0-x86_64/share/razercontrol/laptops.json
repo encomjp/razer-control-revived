@@ -1,0 +1,254 @@
+[
+    {
+        "name": "Blade 15 2016",
+        "vid": "1532",
+        "pid": "0224",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2018 Advanced",
+        "vid": "1532",
+        "pid": "0233",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2018 Base",
+        "vid": "1532",
+        "pid": "023B",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2018 Mercury",
+        "vid": "1532",
+        "pid": "0240",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2019 Base",
+        "vid": "1532",
+        "pid": "0246",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2019 Advanced",
+        "vid": "1532",
+        "pid": "023A",
+        "features": ["logo", "creator_mode"],
+        "fan": [3500, 5300]
+    },
+    {
+        "name": "Blade 15 2019 Mercury",
+        "vid": "1532",
+        "pid": "0245",
+        "features": ["logo", "creator_mode"],
+        "fan": [3500, 5300]
+    },
+    {
+        "name": "Blade 15 2020 Base",
+        "vid": "1532",
+        "pid": "0255",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2020 Advanced",
+        "vid": "1532",
+        "pid": "0253",
+        "features": ["logo", "creator_mode", "boost"],
+        "fan": [3500, 5300]
+    },
+    {
+        "name": "Blade Stealth 2017",
+        "vid": "1532",
+        "pid": "022D",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Stealth Late 2017",
+        "vid": "1532",
+        "pid": "0232",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Stealth 2019",
+        "vid": "1532",
+        "pid": "0239",
+        "features": ["logo"],
+        "fan": [3500, 5300]
+    },
+    {
+        "name": "Blade Stealth 2019 GTX",
+        "vid": "1532",
+        "pid": "024A",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Stealth 2020",
+        "vid": "1532",
+        "pid": "0252",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Stealth Late 2020",
+        "vid": "1532",
+        "pid": "0259",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Pro 2017",
+        "vid": "1532",
+        "pid": "0225",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Pro 2017 v2",
+        "vid": "1532",
+        "pid": "0210",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Pro 2018 FHD",
+        "vid": "1532",
+        "pid": "022F",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade Pro 2019",
+        "vid": "1532",
+        "pid": "0234",
+        "features": ["logo"],
+        "fan": [3500, 5300]
+    },
+    {
+        "name": "Blade Pro 2020",
+        "vid": "1532",
+        "pid": "0256",
+        "features": ["logo"],
+        "fan": [3500, 5300]
+    },
+    {
+        "name": "Blade Pro 17 Early 2021",
+        "vid": "1532",
+        "pid": "026E",
+        "features": ["logo", "boost"],
+        "fan": [2300, 4300]
+    },
+    {
+        "name": "Blade Pro 17 Mid 2021",
+        "vid": "1532",
+        "pid": "0279",
+        "features": ["logo", "boost"],
+        "fan": [2300, 4300]
+    },
+    {
+        "name": "Blade QHD",
+        "vid": "1532",
+        "pid": "020F",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Razer Book 13 2020",
+        "vid": "1532",
+        "pid": "026A",
+        "features": [],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2021 Base",
+        "vid": "1532",
+        "pid": "026F",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 2021 Advanced",
+        "vid": "1532",
+        "pid": "0276",
+        "features": ["logo", "boost"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 Late 2021 Advanced",
+        "vid": "1532",
+        "pid": "026D",
+        "features": ["logo", "boost"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 Late 2021 Base",
+        "vid": "1532",
+        "pid": "027A",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 14 2021",
+        "vid": "1532",
+        "pid": "0270",
+        "features": ["logo"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 15 Early 2022 Advanced",
+        "vid": "1532",
+        "pid": "028A",
+        "features": ["logo", "boost", "bho"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 17 2022",
+        "vid": "1532",
+        "pid": "028B",
+        "features": ["logo", "boost"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 14 2022",
+        "vid": "1532",
+        "pid": "028C",
+        "features": ["logo", "boost", "bho"],
+        "fan": [3500, 5000]
+    },
+    {
+        "name": "Blade 14 2023",
+        "vid": "1532",
+        "pid": "029D",
+        "features": ["logo", "boost", "bho"],
+        "fan": [2200, 5000]
+    },
+    {
+        "name": "Blade 16 2023",
+        "vid": "1532",
+        "pid": "029F",
+        "features": ["logo", "boost", "bho"],
+        "fan": [2200, 5000]
+    },
+    {
+        "name": "Blade 14 2024",
+        "vid": "1532",
+        "pid": "02b6",
+        "features": ["logo", "boost", "bho"],
+        "fan": [2200, 5000]
+    },
+    {
+        "name": "Blade 2025",
+        "vid": "1532",
+        "pid": "02c6",
+        "features": ["logo", "boost", "bho"],
+        "fan": [2200, 5000]
+    }
+]

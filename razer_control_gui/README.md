@@ -1,5 +1,28 @@
 # Razer Laptop Control GUI & CLI
 
+## ❤️ Support This Project
+
+If you find this project useful, please consider donating to support continued development and add support for more Razer blade models:
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/donate/?hosted_button_id=H4SCC24R8KS4A)
+
+Your contribution helps me:
+- 🔧 Add support for more Razer laptop models
+- 🐛 Fix bugs and improve stability
+- 📱 Implement new features
+- 📚 Improve documentation
+
+## ⚠️ Important Disclaimer
+
+**Tested on:** Fedora Linux (as of February 2026)
+
+This project has been primarily tested on Fedora. It should work on Ubuntu and similar Linux distributions, but **no guarantees are given**. If you experience issues on other distributions:
+1. Check the [Issues](https://github.com/encomjp/razer-control/issues) page
+2. Open a new issue with your distribution and error details
+3. I will work with you to add support
+
+**⚠️ WARNING:** Incorrectly configuring hardware controls (especially fan speeds) could potentially damage your device. Use at your own risk and always monitor your system temperatures.
+
 ## Current features
 
 - Full background daemon - Auto load state on machine startup based on last configuration

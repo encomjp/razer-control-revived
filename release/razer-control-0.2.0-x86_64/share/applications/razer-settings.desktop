@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Razer Settings
+Comment=Manage settings from your Razer laptop
+Exec=razer-settings
+Icon=com.github.encomjp.razercontrol
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=razer;laptop;fan;keyboard;rgb;

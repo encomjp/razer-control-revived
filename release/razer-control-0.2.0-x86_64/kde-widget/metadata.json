@@ -1,0 +1,21 @@
+{
+    "KPlugin": {
+        "Icon": "preferences-system-power-management",
+        "Name": "Razer Control",
+        "Description": "Control your Razer laptop from the system tray",
+        "Authors": [
+            {
+                "Name": "Encomjp"
+            }
+        ],
+        "Category": "System Information",
+        "Id": "com.github.encomjp.razercontrol",
+        "License": "GPL-2.0+",
+        "Version": "0.2.0",
+        "Website": "https://github.com/encomjp/razer-control"
+    },
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml",
+    "KPackageStructure": "Plasma/Applet"
+}

@@ -679,6 +679,85 @@ fn create_status_bar() -> gtk::Box {
     main_box
 }
 
+fn check_first_run() -> bool {
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let config_dir = format!("{}/.config/razer-control", home);
+    let first_run_file = format!("{}/first-run.lock", config_dir);
+    
+    if !std::path::Path::new(&first_run_file).exists() {
+        // Create config directory if it doesn't exist
+        let _ = std::fs::create_dir_all(&config_dir);
+        // Create first-run marker file
+        let _ = std::fs::write(&first_run_file, b"first-run");
+        true
+    } else {
+        false
+    }
+}
+
+fn show_first_run_donation_dialog(window: &adw::ApplicationWindow) {
+    let dialog = gtk::Dialog::builder()
+        .title("Support Development")
+        .transient_for(window)
+        .modal(true)
+        .default_width(380)
+        .resizable(false)
+        .build();
+    
+    let content_area = dialog.content_area();
+    content_area.set_spacing(16);
+    content_area.set_margin_top(32);
+    content_area.set_margin_bottom(32);
+    content_area.set_margin_start(32);
+    content_area.set_margin_end(32);
+    content_area.set_halign(gtk::Align::Center);
+
+    // Heart Icon
+    let icon = gtk::Image::builder()
+        .icon_name("emblem-favorite-symbolic")
+        .pixel_size(64)
+        .css_classes(vec!["accent".to_string()])
+        .margin_bottom(8)
+        .build();
+    content_area.append(&icon);
+    
+    let title = gtk::Label::new(Some("Support Development"));
+    title.add_css_class("title-1");
+    content_area.append(&title);
+    
+    let message = gtk::Label::new(Some(
+        "Hi! Thank you for using Razer Control.\n\n\
+        I develop this application in my free time to support the Linux community. \
+        If it helps you, please consider making a small donation.\n\n\
+        Your support helps me acquire more Razer devices for testing and verification, \
+        making the experience better for everyone!"
+    ));
+    message.set_wrap(true);
+    message.set_justify(gtk::Justification::Center);
+    message.set_max_width_chars(35);
+    // Use dim-label class for slightly softer text
+    message.add_css_class("dim-label");
+    content_area.append(&message);
+    
+    dialog.add_button("Maybe Later", gtk::ResponseType::Cancel);
+    let btn_donate = dialog.add_button("Donate ❤️", gtk::ResponseType::Accept);
+    btn_donate.add_css_class("suggested-action");
+    btn_donate.add_css_class("pill");
+    
+    dialog.connect_response(move |dialog: &gtk::Dialog, response_id: gtk::ResponseType| {
+        if response_id == gtk::ResponseType::Accept {
+            // Open PayPal link
+            let url = "https://www.paypal.com/donate/?hosted_button_id=H4SCC24R8KS4A";
+            let _ = std::process::Command::new("xdg-open")
+                .arg(url)
+                .spawn();
+        }
+        dialog.close();
+    });
+    
+    dialog.present();
+}
+
 
 fn main() {
     setup_panic_hook();
@@ -771,6 +850,11 @@ fn main() {
         
         window.set_content(Some(&content_box));
         window.present();
+        
+        // Show first-run donation dialog if this is the first run
+        if check_first_run() {
+            show_first_run_donation_dialog(&window);
+        }
     });
 
     app.run();
@@ -1095,6 +1179,34 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
     let row = SettingsRow::new("Fan Range", &fan_label);
     section.add_row(&row.row);
 
+    // Support Section
+    let section = page.add_section(Some("Support Development"));
+    
+    let support_box = gtk::Box::new(gtk::Orientation::Vertical, 8);
+    support_box.set_margin_top(12);
+    support_box.set_margin_bottom(12);
+    support_box.set_margin_start(12);
+    support_box.set_margin_end(12);
+    
+    let support_desc = gtk::Label::new(Some(
+        "If you find this project useful, consider supporting development.\n\
+        Your contribution helps add support for more Razer laptop models!"
+    ));
+    support_desc.set_wrap(true);
+    support_desc.set_justify(gtk::Justification::Center);
+    support_desc.add_css_class("dim-label");
+    support_box.append(&support_desc);
+    
+    let donate_button = gtk::Button::with_label("Donate via PayPal");
+    donate_button.add_css_class("suggested-action");
+    donate_button.connect_clicked(|_| {
+        let _ = std::process::Command::new("xdg-open")
+            .arg("https://www.paypal.com/donate/?hosted_button_id=H4SCC24R8KS4A")
+            .spawn();
+    });
+    support_box.append(&donate_button);
+    section.add_row(&support_box);
+
     // About Section
     let section = page.add_section(Some("About"));
     
@@ -1106,7 +1218,10 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
     
     let description = gtk::Label::new(Some(
         "Open-source control center for Razer laptops on Linux.\n\
-        Manage power profiles, fan speeds, keyboard lighting, and more."
+        Manage power profiles, fan speeds, keyboard lighting, and more.\n\n\
+        ⚠️ Tested on: Fedora Linux\n\
+        Should work on Ubuntu and similar distributions.\n\
+        If issues occur, please report them on GitHub."
     ));
     description.set_wrap(true);
     description.set_justify(gtk::Justification::Center);
