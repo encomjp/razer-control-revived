@@ -378,8 +378,9 @@ This software is provided AS-IS with **NO WARRANTY**.
 
 ## 🙏 Credits
 
-- Original project: [Razer-Linux/razer-laptop-control-no-dkms](https://github.com/Razer-Linux/razer-laptop-control-no-dkms)
-- GTK4/libadwaita migration & Blade 2025 support: [@encomjp](https://github.com/encomjp)
+- **Core HID Logic**: [Razer-Linux/razer-laptop-control-no-dkms](https://github.com/Razer-Linux/razer-laptop-control-no-dkms)
+- **Project Port & Deamon Rewrite**: [@encomjp](https://github.com/encomjp) (Packaging, Validation, Blade 2025 support)
+- **UI Redesign**: AI (Claude) used only for prototyping and IDE autocomplete - no autonomous agents involved.
 
 ## 📄 License
 
