@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.2.0
+Version:        0.3.0
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -70,6 +70,11 @@ udevadm trigger
 %systemd_postun_with_restart razercontrol.service
 
 %changelog
+* Thu Feb 06 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.0-1
+- UI rework: native libadwaita widgets (SwitchRow, ComboRow, AlertDialog)
+- Simplified CSS with Razer green accent on libadwaita defaults
+- Remove legacy unused source files
+
 * Wed Feb 04 2026 EncomJP <encomjp@users.noreply.github.com> - 0.2.0-1
 - Migrate to GTK4 with libadwaita modern UI
 - Add status bar monitoring

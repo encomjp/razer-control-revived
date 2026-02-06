@@ -8,13 +8,14 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  APP_VERSION: "0.3.0"
 
 jobs:
-  build-linux:
+  build-appimage:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -29,59 +30,56 @@ jobs:
             libpango1.0-dev \
             libcairo2-dev \
             libgdk-pixbuf-2.0-dev \
-            pkg-config
-      
+            libsystemd-dev \
+            pkg-config \
+            libfuse2
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Build
         working-directory: razer_control_gui
         run: cargo build --release
-      
-      - name: Package binaries
-        run: |
-          mkdir -p release-artifacts
-          cp razer_control_gui/target/release/razer-settings release-artifacts/
-          cp razer_control_gui/target/release/razer-cli release-artifacts/
-          cp razer_control_gui/target/release/daemon release-artifacts/razer-daemon
-          cp -r razer_control_gui/data release-artifacts/
-          cp LICENSE release-artifacts/
-          cp README.md release-artifacts/
-          cd release-artifacts && tar -czvf ../razercontrol-linux-x86_64.tar.gz *
-      
-      - name: Upload Linux binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-binaries
-          path: razercontrol-linux-x86_64.tar.gz
 
-  build-flatpak:
-    runs-on: ubuntu-latest
-    container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-48
-      options: --privileged
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: razercontrol.flatpak
-          manifest-path: packaging/flatpak/com.github.encomjp.razercontrol.yml
-          cache-key: flatpak-builder-${{ github.sha }}
-      
-      - name: Upload Flatpak
+      - name: Download linuxdeploy
+        run: |
+          wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Create AppDir and build AppImage
+        run: |
+          APPDIR=RazerControl.AppDir
+
+          mkdir -p $APPDIR/usr/bin
+          mkdir -p $APPDIR/usr/share/applications
+          mkdir -p $APPDIR/usr/share/razercontrol
+          mkdir -p $APPDIR/usr/share/icons/hicolor/scalable/apps
+
+          cp razer_control_gui/target/release/razer-settings $APPDIR/usr/bin/
+          cp razer_control_gui/data/gui/razer-settings.desktop $APPDIR/usr/share/applications/
+          cp razer_control_gui/data/devices/laptops.json $APPDIR/usr/share/razercontrol/
+          cp razer_control_gui/data/gui/com.github.encomjp.razercontrol.svg $APPDIR/usr/share/icons/hicolor/scalable/apps/
+
+          export OUTPUT="RazerControl-${APP_VERSION}-x86_64.AppImage"
+          ./linuxdeploy-x86_64.AppImage \
+            --appimage-extract-and-run \
+            --appdir $APPDIR \
+            --desktop-file razer_control_gui/data/gui/razer-settings.desktop \
+            --icon-file razer_control_gui/data/gui/com.github.encomjp.razercontrol.svg \
+            --output appimage
+
+      - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: flatpak-package
-          path: razercontrol.flatpak
+          name: appimage-package
+          path: RazerControl-*.AppImage
 
   build-rpm:
     runs-on: ubuntu-latest
     container: fedora:41
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install dependencies
         run: |
           dnf install -y \
@@ -100,50 +98,99 @@ jobs:
             gdk-pixbuf2-devel \
             systemd-devel \
             git
-      
+
       - name: Setup rpmbuild structure
         run: |
           mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
           VERSION=$(grep '^Version:' packaging/fedora/razercontrol.spec | awk '{print $2}')
-          mkdir -p razercontrol-revived-$VERSION
-          cp -r * razercontrol-revived-$VERSION/ 2>/dev/null || true
-          tar -czf ~/rpmbuild/SOURCES/razercontrol-revived-$VERSION.tar.gz razercontrol-revived-$VERSION
-      
+          SRCDIR="razercontrol-revived-${VERSION}"
+          mkdir -p "$SRCDIR"
+          cp -r . "$SRCDIR/" 2>/dev/null || true
+          tar -czf ~/rpmbuild/SOURCES/razercontrol-revived-${VERSION}.tar.gz "$SRCDIR"
+
       - name: Build RPM
         run: rpmbuild -bb packaging/fedora/razercontrol.spec
-      
-      - name: Find and copy RPM
+
+      - name: Collect RPM
         run: |
           mkdir -p rpm-output
           find ~/rpmbuild/RPMS -name "*.rpm" -exec cp {} rpm-output/ \;
-      
+
       - name: Upload RPM
         uses: actions/upload-artifact@v4
         with:
           name: rpm-package
           path: rpm-output/*.rpm
 
+  build-tarball:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libdbus-1-dev \
+            libhidapi-dev \
+            libusb-1.0-0-dev \
+            libglib2.0-dev \
+            libgraphene-1.0-dev \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libgdk-pixbuf-2.0-dev \
+            libsystemd-dev \
+            pkg-config
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        working-directory: razer_control_gui
+        run: cargo build --release
+
+      - name: Package tarball
+        run: |
+          DIST="razer-control-${APP_VERSION}-x86_64"
+          mkdir -p $DIST/bin
+          cp razer_control_gui/target/release/razer-settings $DIST/bin/
+          cp razer_control_gui/target/release/razer-cli $DIST/bin/
+          cp razer_control_gui/target/release/daemon $DIST/bin/
+          cp -r razer_control_gui/data $DIST/
+          cp razer_control_gui/install.sh $DIST/
+          cp LICENSE $DIST/
+          cp README.md $DIST/
+          tar -czvf "${DIST}.tar.gz" "$DIST"
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tarball
+          path: razer-control-*.tar.gz
+
   release:
-    needs: [build-linux, build-flatpak, build-rpm]
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-appimage, build-rpm, build-tarball]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      
+
       - name: Display artifacts
         run: find artifacts -type f -ls
-      
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           generate_release_notes: true
           files: |
-            artifacts/linux-binaries/*.tar.gz
-            artifacts/flatpak-package/*.flatpak
+            artifacts/appimage-package/*.AppImage
             artifacts/rpm-package/*.rpm
+            artifacts/linux-tarball/*.tar.gz
