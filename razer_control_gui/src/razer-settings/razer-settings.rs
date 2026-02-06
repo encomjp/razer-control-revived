@@ -122,6 +122,18 @@ fn set_logo(ac: bool, logo_state: u8) -> Option<bool> {
     }
 }
 
+fn get_standard_effect() -> Option<(u8, Vec<u8>)> {
+    let response = send_data(comms::DaemonCommand::GetStandardEffect)?;
+    use comms::DaemonResponse::*;
+    match response {
+        GetStandardEffect { effect, params } => Some((effect, params)),
+        response => {
+            println!("Instead of GetStandardEffect got {response:?}");
+            None
+        }
+    }
+}
+
 fn set_effect(name: &str, values: Vec<u8>) -> Option<bool> {
     let response = send_data(comms::DaemonCommand::SetEffect { name: name.into(), params: values })?;
     use comms::DaemonResponse::*;
@@ -1188,6 +1200,15 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         }));
     }
 
+    // Live-sync: poll daemon every 2s so widget changes appear in GUI
+    {
+        let refresh = refresh.clone();
+        glib::timeout_add_local(Duration::from_secs(2), move || {
+            refresh();
+            glib::ControlFlow::Continue
+        });
+    }
+
     settings_page
 }
 
@@ -1255,6 +1276,32 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
     let color2 = ColorRow::new("Secondary Color", "For gradient effects");
     color2.row.set_visible(false); // hidden by default (Static has no gradient)
     effects_section.add_row(&color2.row);
+
+    // Restore saved effect selection and colors from config
+    if let Some((effect_idx, params)) = get_standard_effect() {
+        if effect_idx <= 3 {
+            effect_combo.set_selected(effect_idx as u32);
+            color2.row.set_visible(effect_idx == 1 || effect_idx == 2);
+        }
+        if params.len() >= 3 {
+            let rgba = gtk::gdk::RGBA::new(
+                params[0] as f32 / 255.0,
+                params[1] as f32 / 255.0,
+                params[2] as f32 / 255.0,
+                1.0,
+            );
+            color1.button.set_rgba(&rgba);
+        }
+        if params.len() >= 6 {
+            let rgba = gtk::gdk::RGBA::new(
+                params[3] as f32 / 255.0,
+                params[4] as f32 / 255.0,
+                params[5] as f32 / 255.0,
+                1.0,
+            );
+            color2.button.set_rgba(&rgba);
+        }
+    }
 
     // Show/hide secondary color based on effect
     {
@@ -1373,6 +1420,15 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
         });
     }
 
+    // Live-sync: poll daemon every 2s so widget changes appear in GUI
+    {
+        let refresh = refresh.clone();
+        glib::timeout_add_local(Duration::from_secs(2), move || {
+            refresh();
+            glib::ControlFlow::Continue
+        });
+    }
+
     settings_page
 }
 
@@ -1386,6 +1442,7 @@ fn make_battery_page() -> SettingsPage {
     let bho = get_bho();
 
     if let Some(bho) = bho {
+        let refreshing = Rc::new(Cell::new(false));
         let section = page.add_section(Some("Battery Health Optimizer"));
 
         let bho_switch = make_switch_row(
@@ -1407,20 +1464,44 @@ fn make_battery_page() -> SettingsPage {
         bho_slider.scale.set_sensitive(bho.0);
         section.add_row(&bho_slider.container);
 
-        let bho_switch_ref = bho_switch.clone();
-        bho_slider.scale.connect_value_changed(move |sc| {
-            let is_on = bho_switch_ref.is_active();
-            let threshold = sc.value() as u8;
-            set_bho(is_on, threshold);
-        });
+        {
+            let bho_switch_ref = bho_switch.clone();
+            let refreshing = refreshing.clone();
+            bho_slider.scale.connect_value_changed(move |sc| {
+                if refreshing.get() { return; }
+                let is_on = bho_switch_ref.is_active();
+                let threshold = sc.value() as u8;
+                set_bho(is_on, threshold);
+            });
+        }
 
-        let scale_ref = bho_slider.scale.clone();
-        bho_switch.connect_active_notify(glib::clone!(@weak scale_ref => move |sw| {
-            let state = sw.is_active();
-            let threshold = scale_ref.value() as u8;
-            set_bho(state, threshold);
-            scale_ref.set_sensitive(state);
-        }));
+        {
+            let refreshing = refreshing.clone();
+            let scale_ref = bho_slider.scale.clone();
+            bho_switch.connect_active_notify(glib::clone!(@weak scale_ref => move |sw| {
+                if refreshing.get() { return; }
+                let state = sw.is_active();
+                let threshold = scale_ref.value() as u8;
+                set_bho(state, threshold);
+                scale_ref.set_sensitive(state);
+            }));
+        }
+
+        // Live-sync: poll daemon every 2s so widget changes appear in GUI
+        {
+            let bho_switch = bho_switch.clone();
+            let bho_scale = bho_slider.scale.clone();
+            glib::timeout_add_local(Duration::from_secs(2), move || {
+                if let Some((is_on, threshold)) = get_bho() {
+                    refreshing.set(true);
+                    bho_switch.set_active(is_on);
+                    bho_scale.set_value(threshold as f64);
+                    bho_scale.set_sensitive(is_on);
+                    refreshing.set(false);
+                }
+                glib::ControlFlow::Continue
+            });
+        }
     } else {
         let section = page.add_section(Some("Battery Health"));
         let info_label = gtk::Label::new(Some("Battery health optimizer is not available on this device."));
@@ -1451,7 +1532,7 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
     let row = SettingsRow::new("Name", &app_name);
     section.add_row(&row.row);
 
-    let version_label = gtk::Label::new(Some("v0.2.3"));
+    let version_label = gtk::Label::new(Some("v0.2.4"));
     let row = SettingsRow::new("Version", &version_label);
     section.add_row(&row.row);
 

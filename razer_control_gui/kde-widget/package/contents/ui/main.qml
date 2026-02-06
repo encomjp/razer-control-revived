@@ -466,10 +466,12 @@ PlasmoidItem {
             "for d in /sys/class/powercap/intel-rapl:0/energy_uj /sys/class/powercap/amd-rapl:0/energy_uj; do " +
             "  [ -r $d ] && echo RAPL_UJ=$(cat $d) && break; " +
             "done; " +
-            "echo FAN_SPEED=$(razer-cli read fan ac 2>/dev/null | grep -oP \"[0-9]+\" | tail -1); " +
-            "echo POWER_PROFILE=$(razer-cli read power ac 2>/dev/null | grep -oP \"[0-9]+\" | head -1); " +
-            "echo BRIGHTNESS=$(razer-cli read brightness ac 2>/dev/null | grep -oP \"[0-9]+\" | tail -1); " +
-            "echo LOGO=$(razer-cli read logo ac 2>/dev/null | grep -oP \"[0-9]+\" | tail -1); " +
+            "ac_on=$(cat /sys/class/power_supply/AC0/online 2>/dev/null || cat /sys/class/power_supply/ADP0/online 2>/dev/null || cat /sys/class/power_supply/ADP1/online 2>/dev/null); " +
+            "_st=bat; [ \"$ac_on\" = \"1\" ] && _st=ac; " +
+            "echo FAN_SPEED=$(razer-cli read fan $_st 2>/dev/null | grep -oP \"[0-9]+\" | tail -1); " +
+            "echo POWER_PROFILE=$(razer-cli read power $_st 2>/dev/null | grep -oP \"[0-9]+\" | head -1); " +
+            "echo BRIGHTNESS=$(razer-cli read brightness $_st 2>/dev/null | grep -oP \"[0-9]+\" | tail -1); " +
+            "echo LOGO=$(razer-cli read logo $_st 2>/dev/null | grep -oP \"[0-9]+\" | tail -1); " +
             "bho=$(razer-cli read bho 2>/dev/null); " +
             "if echo $bho | grep -qi on; then " +
             "  thr=$(echo $bho | grep -oP \"[0-9]+\" | tail -1); " +

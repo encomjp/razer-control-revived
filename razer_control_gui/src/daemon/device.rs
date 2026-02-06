@@ -271,6 +271,23 @@ impl DeviceManager {
         return res;
     }
 
+    pub fn get_standard_effect(&mut self) -> (u8, Vec<u8>) {
+        if let Some(config) = self.get_config() {
+            return (config.gui_effect, config.gui_effect_params.clone());
+        }
+        return (0, vec![]);
+    }
+
+    pub fn save_gui_effect(&mut self, effect_idx: u8, params: Vec<u8>) {
+        if let Some(config) = self.get_config() {
+            config.gui_effect = effect_idx;
+            config.gui_effect_params = params;
+            if let Err(e) = config.write_to_file() {
+                eprintln!("Error write config {:?}", e);
+            }
+        }
+    }
+
     pub fn set_standard_effect(&mut self, effect_id: u8, params: Vec<u8>) -> bool {
         if let Some(config) = self.get_config() {
             config.standard_effect = effect_id;
@@ -374,16 +391,6 @@ impl DeviceManager {
     }
 
     pub fn get_brightness(&mut self, ac: usize) -> u8 {
-        if let Some(laptop) = self.get_device() {
-            if laptop.ac_state as usize == ac {
-                let val = laptop.get_brightness() as u32;
-                let mut perc = val * 100 * 100/ 255;
-                perc += 50;
-                perc /= 100;
-                return perc as u8;
-            }
-        }
-
         if let Some(config) = self.get_ac_config(ac) {
             let val = config.brightness as u32;
             let mut perc = val * 100 * 100/ 255;
@@ -403,12 +410,6 @@ impl DeviceManager {
     }
 
     pub fn get_fan_rpm(&mut self, ac: usize) -> i32 {
-        if let Some(laptop) = self.get_device() {
-            if laptop.ac_state as usize == ac {
-                return laptop.get_fan_rpm() as i32;
-            }
-        }
-
         if let Some(config) = self.get_ac_config(ac) {
             return config.fan_rpm;
         }
@@ -417,12 +418,6 @@ impl DeviceManager {
     }
 
     pub fn get_power_mode(&mut self, ac:usize) -> u8 {
-        if let Some(laptop) = self.get_device() {
-            if laptop.ac_state as usize == ac {
-                return laptop.get_power_mode(0x01);
-            }
-        }
-
         if let Some(config) = self.get_ac_config(ac) {
             return config.power_mode;
         }
@@ -431,12 +426,6 @@ impl DeviceManager {
     }
 
     pub fn get_cpu_boost(&mut self, ac:usize) -> u8 {
-        if let Some(laptop) = self.get_device() {
-            if laptop.ac_state as usize == ac {
-                return laptop.get_cpu_boost();
-            }
-        }
-
         if let Some(config) = self.get_ac_config(ac) {
             return config.cpu_boost;
         }
@@ -445,12 +434,6 @@ impl DeviceManager {
     }
 
     pub fn get_gpu_boost(&mut self, ac:usize) -> u8 {
-        if let Some(laptop) = self.get_device() {
-            if laptop.ac_state as usize == ac {
-                return laptop.get_gpu_boost();
-            }
-        }
-
         if let Some(config) = self.get_ac_config(ac) {
             return config.gpu_boost;
         }
@@ -496,15 +479,46 @@ impl DeviceManager {
     }
 
     pub fn set_bho_handler(&mut self, is_on: bool, threshold: u8) -> bool {
-        return self.get_device()
+        let result = self.get_device()
             .map_or(false, |laptop| laptop.set_bho(is_on, threshold));
+        if result {
+            if let Some(config) = self.get_config() {
+                config.bho_on = is_on;
+                config.bho_threshold = threshold;
+                if let Err(e) = config.write_to_file() {
+                    eprintln!("Error write config {:?}", e);
+                }
+            }
+        }
+        return result;
     }
 
     pub fn get_bho_handler(&mut self) -> Option<(bool, u8)> {
-        return self.get_device()
-            .and_then(|laptop| laptop.get_bho()
-            .map(|result| byte_to_bho(result)));
-    } 
+        // Check if device supports BHO
+        let has_bho = self.get_device()
+            .map_or(false, |laptop| laptop.have_feature("bho".to_string()));
+        if !has_bho {
+            return None;
+        }
+        if let Some(config) = self.get_config() {
+            return Some((config.bho_on, config.bho_threshold));
+        }
+        return None;
+    }
+
+    pub fn restore_bho(&mut self) {
+        let (bho_on, bho_threshold) = {
+            match self.get_config() {
+                Some(config) => (config.bho_on, config.bho_threshold),
+                None => return,
+            }
+        };
+        if bho_on {
+            if let Some(laptop) = self.get_device() {
+                laptop.set_bho(bho_on, bho_threshold);
+            }
+        }
+    }
 
     fn get_config(&mut  self) -> Option<&mut config::Configuration> {
         return self.config.as_mut();

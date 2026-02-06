@@ -42,7 +42,7 @@ install() {
             # files on the system
             cp data/gui/razer-settings.desktop /usr/share/applications/
         fi
-        cp target/release/daemon /usr/share/razercontrol/
+        cp target/release/daemon /usr/bin/razer-daemon
         cp data/devices/laptops.json /usr/share/razercontrol/
         cp data/udev/99-hidraw-permissions.rules /etc/udev/rules.d/
         udevadm control --reload-rules
@@ -57,7 +57,7 @@ EOF
     echo "Starting the service..."
     case $INIT_SYSTEM in
     systemd)
-        sudo cp data/services/systemd/razercontrol.service /etc/systemd/user/
+        sudo cp data/services/systemd/razercontrol.service /usr/lib/systemd/user/
         systemctl --user enable --now razercontrol
         ;;
     openrc)
@@ -83,7 +83,7 @@ uninstall() {
         rm -f /usr/bin/razer-cli
         rm -f /usr/bin/razer-settings
         rm -f /usr/share/applications/razer-settings.desktop
-        rm -f /usr/share/razercontrol/daemon
+        rm -f /usr/bin/razer-daemon
         rm -f /usr/share/razercontrol/laptops.json
         rm -f /etc/udev/rules.d/99-hidraw-permissions.rules
         udevadm control --reload-rules
@@ -100,7 +100,7 @@ EOF
     systemd)
         systemctl --user disable --now razercontrol
     sudo bash <<EOF
-        rm -f /etc/systemd/user/razercontrol.service
+        rm -f /usr/lib/systemd/user/razercontrol.service
 EOF
         ;;
     openrc)

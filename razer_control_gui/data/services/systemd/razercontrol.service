@@ -1,14 +1,13 @@
 [Unit]
 Description=Razer laptop control daemon
-After=multi-user.target
+After=default.target
 
 [Service]
 Type=simple
-Environment="HOME=/root"
-ExecStart=/usr/local/bin/razercontrol-daemon
+ExecStartPre=/bin/mkdir -p %h/.local/share/razercontrol
+ExecStart=/usr/bin/razer-daemon
 Restart=on-failure
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
-
+WantedBy=default.target

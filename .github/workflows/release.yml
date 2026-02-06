@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  APP_VERSION: "0.2.1"
+  APP_VERSION: "0.2.4"
 
 jobs:
   build-appimage:
@@ -199,8 +199,21 @@ jobs:
           set -e
           udevadm control --reload-rules || true
           udevadm trigger || true
+          # Enable systemd user service for all logged-in users
+          if [ -d /run/systemd/system ]; then
+            systemctl --global enable razercontrol.service || true
+          fi
           POSTINST
           chmod 755 $PKG/DEBIAN/postinst
+
+          cat > $PKG/DEBIAN/prerm << 'PRERM'
+          #!/bin/sh
+          set -e
+          if [ -d /run/systemd/system ]; then
+            systemctl --global disable razercontrol.service || true
+          fi
+          PRERM
+          chmod 755 $PKG/DEBIAN/prerm
 
           dpkg-deb --build --root-owner-group $PKG
 
@@ -259,12 +272,15 @@ jobs:
       - name: Package tarball
         run: |
           DIST="razer-control-${APP_VERSION}-x86_64"
-          mkdir -p $DIST/bin
+          mkdir -p $DIST/bin $DIST/share/applications $DIST/share/razercontrol $DIST/systemd $DIST/udev
           cp razer_control_gui/target/release/razer-settings $DIST/bin/
           cp razer_control_gui/target/release/razer-cli $DIST/bin/
           cp razer_control_gui/target/release/daemon $DIST/bin/
-          cp -r razer_control_gui/data $DIST/
-          cp razer_control_gui/install.sh $DIST/
+          cp razer_control_gui/data/gui/razer-settings.desktop $DIST/share/applications/
+          cp razer_control_gui/data/devices/laptops.json $DIST/share/razercontrol/
+          cp razer_control_gui/data/services/systemd/razercontrol.service $DIST/systemd/
+          cp razer_control_gui/data/udev/99-hidraw-permissions.rules $DIST/udev/
+          cp release/razer-control-0.2.0-x86_64/install.sh $DIST/install.sh
           cp LICENSE $DIST/
           cp README.md $DIST/
           tar -czvf "${DIST}.tar.gz" "$DIST"

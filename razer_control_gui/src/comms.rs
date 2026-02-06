@@ -28,6 +28,7 @@ pub enum DaemonCommand {
     GetBatteryHealthOptimizer (),
     GetDeviceName,
     GetActualFanRpm,
+    GetStandardEffect,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -54,6 +55,7 @@ pub enum DaemonResponse {
     GetBatteryHealthOptimizer { is_on: bool, threshold: u8 },
     GetDeviceName { name: String },
     GetActualFanRpm { rpm: i32 },
+    GetStandardEffect { effect: u8, params: Vec<u8> },
 }
 
 #[allow(dead_code)]

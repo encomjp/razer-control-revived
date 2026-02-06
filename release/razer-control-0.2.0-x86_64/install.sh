@@ -15,8 +15,8 @@ print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [[ $EUID -ne 0 ]]; then
-    print_error "This script must be run as root (use sudo)"
+if [[ $EUID -eq 0 ]]; then
+    print_error "Please do not run as root (sudo will be used where needed)"
     exit 1
 fi
 
@@ -27,33 +27,36 @@ echo ""
 
 # Install binaries
 print_info "Installing binaries..."
-install -D -m 755 "$SCRIPT_DIR/bin/razer-settings" /usr/local/bin/razer-settings
-install -D -m 755 "$SCRIPT_DIR/bin/razer-cli" /usr/local/bin/razer-cli
-install -D -m 755 "$SCRIPT_DIR/bin/daemon" /usr/local/bin/razer-daemon
+sudo install -D -m 755 "$SCRIPT_DIR/bin/razer-settings" /usr/bin/razer-settings
+sudo install -D -m 755 "$SCRIPT_DIR/bin/razer-cli" /usr/bin/razer-cli
+sudo install -D -m 755 "$SCRIPT_DIR/bin/daemon" /usr/bin/razer-daemon
 
 # Install data files
 print_info "Installing data files..."
-install -D -m 644 "$SCRIPT_DIR/share/applications/razer-settings.desktop" /usr/share/applications/razer-settings.desktop
-install -D -m 644 "$SCRIPT_DIR/share/razercontrol/laptops.json" /usr/share/razercontrol/laptops.json
+sudo install -D -m 644 "$SCRIPT_DIR/share/applications/razer-settings.desktop" /usr/share/applications/razer-settings.desktop
+sudo install -D -m 644 "$SCRIPT_DIR/share/razercontrol/laptops.json" /usr/share/razercontrol/laptops.json
 
-# Install systemd service
-print_info "Installing systemd service..."
-install -D -m 644 "$SCRIPT_DIR/systemd/razercontrol.service" /etc/systemd/system/razercontrol.service
+# Install systemd user service
+print_info "Installing systemd user service..."
+sudo install -D -m 644 "$SCRIPT_DIR/systemd/razercontrol.service" /usr/lib/systemd/user/razercontrol.service
 
 # Install udev rules
 print_info "Installing udev rules..."
-install -D -m 644 "$SCRIPT_DIR/udev/99-hidraw-permissions.rules" /etc/udev/rules.d/99-hidraw-permissions.rules
+sudo install -D -m 644 "$SCRIPT_DIR/udev/99-hidraw-permissions.rules" /etc/udev/rules.d/99-hidraw-permissions.rules
+
+# Create config directory
+mkdir -p ~/.local/share/razercontrol
 
 # Reload udev
 print_info "Reloading udev rules..."
-udevadm control --reload-rules
-udevadm trigger
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 
-# Enable and start service
-print_info "Enabling systemd service..."
-systemctl daemon-reload
-systemctl enable razercontrol
-systemctl start razercontrol || print_warn "Could not start service - check 'systemctl status razercontrol'"
+# Enable and start user service
+print_info "Enabling systemd user service..."
+systemctl --user daemon-reload
+systemctl --user enable razercontrol
+systemctl --user start razercontrol || print_warn "Could not start service - check 'systemctl --user status razercontrol'"
 
 echo ""
 print_info "Installation complete!"
@@ -64,3 +67,4 @@ echo "  2. Run: kbuildsycoca6"
 echo "  3. Add widget to your panel"
 echo ""
 echo "Please log out and back in (or reboot) for udev rules to take effect."
+echo "To check daemon status: systemctl --user status razercontrol"

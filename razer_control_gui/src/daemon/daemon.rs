@@ -68,6 +68,7 @@ fn main() {
             println!("Online AC0: {:?}", online);
             d.set_ac_state(online);
             d.restore_standard_effect();
+            d.restore_bho();
             if let Ok(json) = config::Configuration::read_effects_file() {
                 EFFECT_MANAGER.lock().unwrap().load_from_save(json);
             } else {
@@ -330,6 +331,17 @@ pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::Daemon
             comms::DaemonCommand::GetGPUBoost{ac} => Some(comms::DaemonResponse::GetGPUBoost { gpu: d.get_gpu_boost(ac) }),
             comms::DaemonCommand::SetEffect{ name, params } => {
                 let mut res = false;
+                let gui_idx = match name.as_str() {
+                    "static" => 0u8,
+                    "static_gradient" => 1,
+                    "wave_gradient" => 2,
+                    "breathing_single" => 3,
+                    _ => 255,
+                };
+                // Persist GUI effect selection to config
+                if gui_idx < 255 {
+                    d.save_gui_effect(gui_idx, params.clone());
+                }
                 if let Ok(mut k) = EFFECT_MANAGER.lock() {
                     res = true;
                     let effect = match name.as_str() {
@@ -400,6 +412,10 @@ pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::Daemon
                     None => "Unknown Device".into()
                 };
                 return Some(comms::DaemonResponse::GetDeviceName { name });
+            }
+            comms::DaemonCommand::GetStandardEffect => {
+                let (effect, params) = d.get_standard_effect();
+                Some(comms::DaemonResponse::GetStandardEffect { effect, params })
             }
 
         };

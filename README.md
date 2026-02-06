@@ -27,7 +27,7 @@ If you find this project useful, please consider supporting its development:
 
 ## 📥 Downloads
 
-**[⬇️ Download Latest Release (v0.2.3)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.2.3)**
+**[⬇️ Download Latest Release (v0.2.4)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.2.4)**
 
 | Package | Best For | Description |
 |---------|----------|-------------|
@@ -38,12 +38,12 @@ If you find this project useful, please consider supporting its development:
 
 ### Ubuntu / Debian
 ```bash
-sudo apt install ./razercontrol-revived_0.2.3_amd64.deb
+sudo apt install ./razercontrol-revived_0.2.4_amd64.deb
 ```
 
 ### Fedora / RHEL
 ```bash
-sudo dnf install ./razercontrol-0.2.3-1.fc41.x86_64.rpm
+sudo dnf install ./razercontrol-0.2.4-1.fc41.x86_64.rpm
 ```
 
 ### All Other Distributions (AppImage)
@@ -52,13 +52,13 @@ Install the daemon first, then use the portable AppImage for the GUI:
 
 ```bash
 # 1. Install daemon from tarball
-tar -xzf razer-control-0.2.3-x86_64.tar.gz
-cd razer-control-0.2.3-x86_64
+tar -xzf razer-control-0.2.4-x86_64.tar.gz
+cd razer-control-0.2.4-x86_64
 sudo ./install.sh
 
 # 2. Run the AppImage
-chmod +x RazerControl-0.2.3-x86_64.AppImage
-./RazerControl-0.2.3-x86_64.AppImage
+chmod +x RazerControl-0.2.4-x86_64.AppImage
+./RazerControl-0.2.4-x86_64.AppImage
 ```
 
 > **Note:** Log out and back in (or reboot) after installation for udev rules to take effect.
@@ -81,15 +81,15 @@ chmod +x RazerControl-0.2.3-x86_64.AppImage
 
 | Model | Year | USB PID | Status |
 |-------|------|---------|--------|
-| Blade 15 | 2016-2022 | Various | ✅ Tested |
-| Blade 14 | 2021-2024 | Various | ✅ Tested |
-| Blade 16 | 2023 | 029F | ✅ Tested |
-| Blade 17 | 2022 | 028B | ✅ Tested |
-| Blade Pro | 2017-2021 | Various | ✅ Tested |
-| Blade Stealth | 2017-2020 | Various | ✅ Tested |
-| Blade 15 Advanced | Mid 2021 | 0276 | ✅ Confirmed |
-| Razer Book 13 | 2020 | 026A | ✅ Tested |
-| **Blade 2025** | 2025 | **02c6** | ✅ **NEW!** |
+| Blade Stealth | 2015-2020 | Various | ✅ Supported |
+| Blade 15 | 2016-2023 | Various | ✅ Supported |
+| Blade Pro | 2017-2021 | Various | ✅ Supported |
+| Blade 14 | 2021-2025 | Various | ✅ Supported |
+| Blade 16 | 2023-2025 | Various | ✅ Supported |
+| Blade 17 | 2022 | 028B | ✅ Supported |
+| Blade 18 | 2023-2025 | Various | ✅ Supported |
+| Razer Book 13 | 2020 | 026A | ✅ Supported |
+| **Blade 16 2025** | 2025 | **02C6** | ✅ **Tested** |
 
 **Check if your laptop is supported:**
 ```bash
@@ -249,19 +249,21 @@ razer-cli standard-effect off
 
 ### Service Management
 
+The daemon runs as a **systemd user service** (no root required):
+
 ```bash
 # Check daemon status
-sudo systemctl status razercontrol
+systemctl --user status razercontrol
 
 # Restart daemon
-sudo systemctl restart razercontrol
+systemctl --user restart razercontrol
 
 # View logs
-sudo journalctl -u razercontrol -f
+journalctl --user -u razercontrol -f
 
 # Enable/disable auto-start
-sudo systemctl enable razercontrol
-sudo systemctl disable razercontrol
+systemctl --user enable razercontrol
+systemctl --user disable razercontrol
 ```
 
 ## 🔧 Troubleshooting
@@ -283,7 +285,7 @@ Your laptop's USB PID might not be in the device list.
 
 3. Restart the daemon:
    ```bash
-   sudo systemctl restart razercontrol
+   systemctl --user restart razercontrol
    ```
 
 See [Adding Support for New Devices](#-adding-support-for-new-devices) for details.
@@ -306,10 +308,10 @@ Then log out and back in, or reboot.
 
 Check if another Razer service is conflicting:
 ```bash
-systemctl list-units | grep -i razer
+systemctl --user list-units | grep -i razer
 ```
 
-Disable any conflicting system services:
+Disable any conflicting services:
 ```bash
 sudo systemctl stop razer-service
 sudo systemctl disable razer-service
@@ -321,17 +323,17 @@ sudo systemctl disable razer-service
 
 1. Check if the daemon is running:
    ```bash
-   sudo systemctl status razercontrol
+   systemctl --user status razercontrol
    ```
 
 2. If not running, start it:
    ```bash
-   sudo systemctl start razercontrol
+   systemctl --user start razercontrol
    ```
 
 3. Check logs for errors:
    ```bash
-   sudo journalctl -u razercontrol -n 50
+   journalctl --user -u razercontrol -n 50
    ```
 </details>
 
@@ -383,7 +385,7 @@ This software is provided AS-IS with **NO WARRANTY**.
 - ❌ Not affiliated with Razer Inc.
 - ❌ Not responsible for any damage to your hardware
 - ❌ No official support - community project only
-- ✅ Works on my machine™ (Blade 2025 with RTX 5070 Ti)
+- ✅ Works on my machine™ (Blade 16 2025 with RTX 5070 Ti)
 
 ## 🙏 Credits
 

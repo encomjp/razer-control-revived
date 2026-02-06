@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.2.1
+Version:        0.2.4
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -45,7 +45,7 @@ install -D -m 755 razer_control_gui/target/release/daemon $RPM_BUILD_ROOT%{_bind
 install -D -m 644 razer_control_gui/data/gui/razer-settings.desktop $RPM_BUILD_ROOT%{_datadir}/applications/razer-settings.desktop
 install -D -m 644 razer_control_gui/data/devices/laptops.json $RPM_BUILD_ROOT%{_datadir}/razercontrol/laptops.json
 install -D -m 644 razer_control_gui/data/udev/99-hidraw-permissions.rules $RPM_BUILD_ROOT%{_udevrulesdir}/99-hidraw-permissions.rules
-install -D -m 644 razer_control_gui/data/services/systemd/razercontrol.service $RPM_BUILD_ROOT%{_unitdir}/razercontrol.service
+install -D -m 644 razer_control_gui/data/services/systemd/razercontrol.service $RPM_BUILD_ROOT%{_userunitdir}/razercontrol.service
 
 %files
 %{_bindir}/razer-settings
@@ -54,22 +54,31 @@ install -D -m 644 razer_control_gui/data/services/systemd/razercontrol.service $
 %{_datadir}/applications/razer-settings.desktop
 %{_datadir}/razercontrol/laptops.json
 %{_udevrulesdir}/99-hidraw-permissions.rules
-%{_unitdir}/razercontrol.service
+%{_userunitdir}/razercontrol.service
 %license LICENSE
 %doc README.md
 
 %post
 udevadm control --reload-rules
 udevadm trigger
-%systemd_post razercontrol.service
+%systemd_user_post razercontrol.service
 
 %preun
-%systemd_preun razercontrol.service
+%systemd_user_preun razercontrol.service
 
 %postun
-%systemd_postun_with_restart razercontrol.service
+%systemd_user_postun_with_restart razercontrol.service
 
 %changelog
+* Fri Feb 06 2026 EncomJP <encomjp@users.noreply.github.com> - 0.2.4-1
+- Add 12 new Razer laptop models (Blade 15/16/18 2023-2025, Stealth 2015/2016, Studio Edition)
+- Settings persistence: all settings saved to config and restored on boot
+- Live sync between KDE widget and GUI app (2-second polling)
+- Fix KDE widget AC/battery profile mismatch (reads now match write profile)
+- Fix systemd user service (correct targets, binary paths, auto-create config dir)
+- Fix DEB package systemd user service enablement
+- Fix README troubleshooting commands for user service
+
 * Thu Feb 06 2026 EncomJP <encomjp@users.noreply.github.com> - 0.2.1-1
 - UI rework: native libadwaita widgets (SwitchRow, ComboRow, AlertDialog)
 - Simplified CSS with Razer green accent on libadwaita defaults
