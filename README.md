@@ -27,7 +27,7 @@ If you find this project useful, please consider supporting its development:
 
 ## 📥 Downloads
 
-**[⬇️ Download Latest Release (v0.2.4)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.2.4)**
+**[⬇️ Download Latest Release (v0.2.5)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.2.5)**
 
 | Package | Best For | Description |
 |---------|----------|-------------|
@@ -38,12 +38,12 @@ If you find this project useful, please consider supporting its development:
 
 ### Ubuntu / Debian
 ```bash
-sudo apt install ./razercontrol-revived_0.2.4_amd64.deb
+sudo apt install ./razercontrol-revived_0.2.5_amd64.deb
 ```
 
 ### Fedora / RHEL
 ```bash
-sudo dnf install ./razercontrol-0.2.4-1.fc41.x86_64.rpm
+sudo dnf install ./razercontrol-0.2.5-1.fc41.x86_64.rpm
 ```
 
 ### All Other Distributions (AppImage)
@@ -52,13 +52,13 @@ Install the daemon first, then use the portable AppImage for the GUI:
 
 ```bash
 # 1. Install daemon from tarball
-tar -xzf razer-control-0.2.4-x86_64.tar.gz
-cd razer-control-0.2.4-x86_64
+tar -xzf razer-control-0.2.5-x86_64.tar.gz
+cd razer-control-0.2.5-x86_64
 sudo ./install.sh
 
 # 2. Run the AppImage
-chmod +x RazerControl-0.2.4-x86_64.AppImage
-./RazerControl-0.2.4-x86_64.AppImage
+chmod +x RazerControl-0.2.5-x86_64.AppImage
+./RazerControl-0.2.5-x86_64.AppImage
 ```
 
 > **Note:** Log out and back in (or reboot) after installation for udev rules to take effect.

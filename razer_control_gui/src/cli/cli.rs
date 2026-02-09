@@ -135,6 +135,15 @@ enum AcState {
     Ac,
 }
 
+impl AcState {
+    fn as_index(&self) -> usize {
+        match self {
+            AcState::Bat => 0,
+            AcState::Ac => 1,
+        }
+    }
+}
+
 #[derive(Parser, Clone)]
 struct AcStateParam {
     /// battery/plugged in
@@ -280,33 +289,33 @@ fn main() {
 
     match cli.args {
         Args::Read { attr } => match attr {
-            ReadAttr::Fan(AcStateParam { ac_state }) => read_fan_rpm(ac_state as usize),
-            ReadAttr::Power(AcStateParam { ac_state }) => read_power_mode(ac_state as usize),
-            ReadAttr::Brightness(AcStateParam { ac_state }) => read_brightness(ac_state as usize),
-            ReadAttr::Logo(AcStateParam { ac_state }) => read_logo_mode(ac_state as usize),
+            ReadAttr::Fan(AcStateParam { ac_state }) => read_fan_rpm(ac_state.as_index()),
+            ReadAttr::Power(AcStateParam { ac_state }) => read_power_mode(ac_state.as_index()),
+            ReadAttr::Brightness(AcStateParam { ac_state }) => read_brightness(ac_state.as_index()),
+            ReadAttr::Logo(AcStateParam { ac_state }) => read_logo_mode(ac_state.as_index()),
             ReadAttr::Sync => read_sync(),
             ReadAttr::Bho => read_bho(),
             ReadAttr::FanRpm => read_actual_fan_rpm(),
         },
         Args::Write { attr } => match attr {
             WriteAttr::Fan(FanParams { ac_state, speed }) => {
-                write_fan_speed(ac_state as usize, speed)
+                write_fan_speed(ac_state.as_index(), speed)
             }
             WriteAttr::Power(PowerParams {
                 ac_state,
                 pwr,
                 cpu_mode,
                 gpu_mode,
-            }) => write_pwr_mode(ac_state as usize, pwr, cpu_mode, gpu_mode),
+            }) => write_pwr_mode(ac_state.as_index(), pwr, cpu_mode, gpu_mode),
             WriteAttr::Brightness(BrightnessParams {
                 ac_state,
                 brightness,
-            }) => write_brightness(ac_state as usize, brightness as u8),
+            }) => write_brightness(ac_state.as_index(), brightness as u8),
             WriteAttr::Sync(SyncParams { sync_state }) => write_sync(sync_state.is_on()),
             WriteAttr::Logo(LogoParams {
                 ac_state,
                 logo_state,
-            }) => write_logo_mode(ac_state as usize, logo_state as u8),
+            }) => write_logo_mode(ac_state.as_index(), logo_state as u8),
             WriteAttr::Bho(BhoParams { state, threshold }) => {
                 validate_and_write_bho(threshold, state)
             }

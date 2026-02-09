@@ -366,7 +366,8 @@ impl DeviceManager {
 
     pub fn set_brightness(&mut self, ac:usize, brightness: u8) -> bool {
         let mut res: bool = false;
-        let _val = brightness as u16  * 255 / 100;
+        let clamped = if brightness > 100 { 100u16 } else { brightness as u16 };
+        let _val = clamped * 255 / 100;
         if let Some(config) = self.get_config() {
             config.power[ac].brightness = _val as u8;
             if config.sync {
@@ -455,8 +456,13 @@ impl DeviceManager {
     }
 
     pub fn set_ac_state_get(&mut self) {
-        let dbus_system = Connection::new_system()
-            .expect("failed to connect to D-Bus system bus");
+        let dbus_system = match Connection::new_system() {
+            Ok(conn) => conn,
+            Err(e) => {
+                eprintln!("Failed to connect to D-Bus system bus: {}", e);
+                return;
+            }
+        };
         let proxy_ac = dbus_system.with_proxy("org.freedesktop.UPower", "/org/freedesktop/UPower/devices/line_power_AC0", time::Duration::from_millis(5000));
         use battery::OrgFreedesktopUPowerDevice;
         if let Ok(online) = proxy_ac.online() {
@@ -690,7 +696,8 @@ impl RazerLaptop {
         let mut report: RazerPacket = RazerPacket::new(0x03, 0x0a, 80);
         report.args[0] = effect_id; // effect id
         if !params.is_empty() {
-            for idx in 0..params.len() {
+            let len = params.len().min(79); // args[0] is effect_id, so max 79 param bytes
+            for idx in 0..len {
                 report.args[idx+1] = params[idx];
             }
         }
@@ -858,6 +865,7 @@ impl RazerLaptop {
         return true;
     }
 
+    #[allow(dead_code)]
     pub fn get_fan_rpm(&mut self) -> u16 {
         let res: u16 = self.fan_rpm as u16;
         return res * 100;
@@ -924,6 +932,7 @@ impl RazerLaptop {
         return false;
     }
 
+    #[allow(dead_code)]
     pub fn get_brightness(&mut self) -> u8 {
         let mut report: RazerPacket = RazerPacket::new(0x03, 0x83, 0x03);
         report.args[0] = RazerLaptop::VARSTORE;
@@ -935,6 +944,7 @@ impl RazerLaptop {
         return 0;
     }
 
+    #[allow(dead_code)]
     pub fn get_bho(&mut self) -> Option<u8> {
         if !self.have_feature("bho".to_string()) {
             return None;
@@ -1019,6 +1029,7 @@ impl RazerLaptop {
 
 // top bit flags whether battery health optimization is on or off
 // bottom bits are the actual threshold that it is set to
+#[allow(dead_code)]
 fn byte_to_bho(u: u8) -> (bool, u8) {
     return (u & (1 << 7) != 0, (u & 0b0111_1111));
 }

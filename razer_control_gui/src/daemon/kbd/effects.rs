@@ -16,11 +16,14 @@ impl Effect for Static {
     where
         Self: Sized,
     {
+        let r = *args.get(0).unwrap_or(&0);
+        let g = *args.get(1).unwrap_or(&0);
+        let b = *args.get(2).unwrap_or(&0);
         let mut kbd = board::KeyboardData::new();
-        kbd.set_kbd_colour(args[0], args[1], args[2]);
+        kbd.set_kbd_colour(r, g, b);
         let s = Static {
             kbd,
-            args: [args[0], args[1], args[2]],
+            args: [r, g, b],
         };
         return Box::new(s);
     }
@@ -74,7 +77,8 @@ impl Effect for StaticGradient {
     {
         let mut kbd = board::KeyboardData::new();
         let args: [u8; 6] = [
-            args[0], args[1], args[2], args[3], args[4], args[5]
+            *args.get(0).unwrap_or(&0), *args.get(1).unwrap_or(&0), *args.get(2).unwrap_or(&0),
+            *args.get(3).unwrap_or(&0), *args.get(4).unwrap_or(&0), *args.get(5).unwrap_or(&0),
         ];
         let mut c1 = board::AnimatorKeyColour::new_u(args[0], args[1], args[2]);
         let c2 = board::AnimatorKeyColour::new_u(args[3], args[4], args[5]);
@@ -136,7 +140,8 @@ impl Effect for WaveGradient {
         Self: Sized,
     {
         let args: [u8; 6] = [
-            args[0], args[1], args[2], args[3], args[4], args[5],
+            *args.get(0).unwrap_or(&0), *args.get(1).unwrap_or(&0), *args.get(2).unwrap_or(&0),
+            *args.get(3).unwrap_or(&0), *args.get(4).unwrap_or(&0), *args.get(5).unwrap_or(&0),
         ];
         let mut wave = WaveGradient {
             kbd: board::KeyboardData::new(),
@@ -221,21 +226,25 @@ pub struct BreathSingle {
 
 impl Effect for BreathSingle {
     fn new(args: Vec<u8>) -> Box<dyn Effect> {
+        let r = *args.get(0).unwrap_or(&0);
+        let g = *args.get(1).unwrap_or(&0);
+        let b = *args.get(2).unwrap_or(&0);
+        let d = *args.get(3).unwrap_or(&10);
         let mut k = board::KeyboardData::new();
-        let cycle_duration_ms = args[3] as f32 * 100.0;
+        let cycle_duration_ms = d as f32 * 100.0;
         k.set_kbd_colour(0, 0, 0); // Sets all keyboard lights off initially
         Box::new(BreathSingle {
-            args: [args[0], args[1], args[2], args[3]],
+            args: [r, g, b, d],
             kbd: k,
             step_duration_ms: cycle_duration_ms as u128,
             static_start_ms: get_millis(),
             curr_step: 0,
-            target_colour: board::AnimatorKeyColour::new_u(args[0], args[1], args[2]),
+            target_colour: board::AnimatorKeyColour::new_u(r, g, b),
             current_colour: board::AnimatorKeyColour::new_u(0, 0, 0),
             animator_step_colour: board::AnimatorKeyColour::new_f(
-                args[0] as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
-                args[1] as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
-                args[2] as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
+                r as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
+                g as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
+                b as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
             ),
         })
     }

@@ -94,7 +94,10 @@ impl Configuration {
 }
 
 fn get_home_directory() -> String {
-    env::var("HOME").expect("The \"HOME\" environment variable must be set to a valid directory")
+    env::var("HOME").unwrap_or_else(|_| {
+        eprintln!("WARNING: HOME environment variable not set, falling back to /tmp");
+        "/tmp".to_string()
+    })
 }
 
 fn ensure_config_dir() -> io::Result<()> {

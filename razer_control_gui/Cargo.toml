@@ -1,6 +1,6 @@
 [package]
 name = "service"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Adrian Kozowski <kontakt@adrian-kozlowski.de>"]
 edition = "2024"
 

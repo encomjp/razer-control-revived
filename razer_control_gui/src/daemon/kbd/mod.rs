@@ -26,6 +26,7 @@ pub struct EffectSave {
 /// An effect is a lighting function that is updated 30 times per second
 /// in order to create an animation of some description on the laptop's
 /// keyboard
+#[allow(dead_code)]
 pub trait Effect: Send + Sync {
     /// Returns a new instance of an Effect
     fn new(args: Vec<u8>) -> Box<dyn Effect>
@@ -54,6 +55,9 @@ struct EffectLayer {
     effect: Box<dyn Effect>,
 }
 
+// SAFETY: EffectLayer is only accessed behind a Mutex<EffectManager>, which
+// provides synchronization. The Box<dyn Effect> contents are simple color/animation
+// data with no interior mutability or thread-local state.
 unsafe impl Send for EffectLayer {}
 unsafe impl Sync for EffectLayer {}
 
@@ -72,10 +76,14 @@ impl EffectLayer {
     fn get_save(&mut self) -> Option<serde_json::Value> {
         match serde_json::to_value(self.effect.save()) {
             Ok(mut x) => {
-                let keys = serde_json::to_value(&self.key_mask).unwrap();
-                x.as_object_mut()
-                    .unwrap()
-                    .insert(String::from("key_mask"), keys);
+                let keys = match serde_json::to_value(&self.key_mask) {
+                    Ok(k) => k,
+                    Err(e) => { eprintln!("Failed to serialize key_mask: {}", e); return None; }
+                };
+                match x.as_object_mut() {
+                    Some(obj) => { obj.insert(String::from("key_mask"), keys); }
+                    None => { eprintln!("Effect save is not a JSON object"); return None; }
+                }
                 Some(x)
             }
             Err(_) => None,
@@ -87,7 +95,10 @@ impl EffectLayer {
             eprintln!("Missing data for effect!");
             return None;
         }
-        let key_mask: Vec<bool> = serde_json::from_value(json["key_mask"].clone()).unwrap();
+        let key_mask: Vec<bool> = match serde_json::from_value(json["key_mask"].clone()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Failed to deserialize key_mask: {}", e); return None; }
+        };
         if key_mask.len() != 90 {
             eprintln!(
                 "Invalid key count effect. Expected 90, found {}",
@@ -95,8 +106,14 @@ impl EffectLayer {
             );
             return None;
         }
-        let name: String = serde_json::from_value(json["name"].clone()).unwrap();
-        let args: Vec<u8> = serde_json::from_value(json["args"].clone()).unwrap();
+        let name: String = match serde_json::from_value(json["name"].clone()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Failed to deserialize effect name: {}", e); return None; }
+        };
+        let args: Vec<u8> = match serde_json::from_value(json["args"].clone()) {
+            Ok(v) => v,
+            Err(e) => { eprintln!("Failed to deserialize effect args: {}", e); return None; }
+        };
 
         let effect: Option<Box<dyn Effect>> = match name.as_str() {
             "Static" => Some(effects::Static::new(args)),
@@ -105,14 +122,13 @@ impl EffectLayer {
             "Static Gradient" => Some(effects::StaticGradient::new(args)),
             _ => None,
         };
-        if effect.is_none() {
-            eprintln!("Effect failed to load. Invalid name: {}", name);
-            return None;
+        match effect {
+            Some(e) => Some(EffectLayer { key_mask, effect: e }),
+            None => {
+                eprintln!("Effect failed to load. Invalid name: {}", name);
+                None
+            }
         }
-        return Some(EffectLayer {
-            key_mask,
-            effect: effect.unwrap(),
-        });
     }
 
     pub fn get_state(&mut self) -> Vec<u8> {
@@ -129,6 +145,9 @@ pub struct EffectManager {
     render_board: board::KeyboardData,
 }
 
+// SAFETY: EffectManager is only accessed behind a global Mutex (EFFECT_MANAGER),
+// so all access is already serialized. Its fields (Vec<EffectLayer>, KeyboardData)
+// contain no non-Send/Sync types beyond the trait objects covered by EffectLayer's impls.
 unsafe impl Send for EffectManager {}
 unsafe impl Sync for EffectManager {}
 
@@ -180,11 +199,13 @@ impl EffectManager {
         let tmp_saves: Vec<Option<serde_json::Value>> =
             self.layers.iter_mut().map(|l| l.get_save()).collect();
 
-        for save in tmp_saves {
-            if let Some(x) = save {
-                save_json["effects"].as_array_mut().unwrap().push(x);
-            } else {
-                eprintln!("Warning, discarding effect!");
+        if let Some(arr) = save_json["effects"].as_array_mut() {
+            for save in tmp_saves {
+                if let Some(x) = save {
+                    arr.push(x);
+                } else {
+                    eprintln!("Warning, discarding effect!");
+                }
             }
         }
         return save_json;
@@ -195,12 +216,16 @@ impl EffectManager {
             eprintln!("Invalid json. No effects field!");
             return;
         }
-        for e in json["effects"].as_array_mut().unwrap() {
-            if let Some(x) = EffectLayer::from_save(e.clone()) {
-                self.layers.push(x);
-            } else {
-                eprintln!("Error adding effect");
+        if let Some(effects) = json["effects"].as_array_mut() {
+            for e in effects {
+                if let Some(x) = EffectLayer::from_save(e.clone()) {
+                    self.layers.push(x);
+                } else {
+                    eprintln!("Error adding effect");
+                }
             }
+        } else {
+            eprintln!("Effects field is not an array!");
         }
     }
 
@@ -208,8 +233,12 @@ impl EffectManager {
         if layer_id < 0 {
             // Requesting global layer
             return self.render_board.get_curr_state();
-        } else {
-            return self.layers[layer_id as usize].get_state();
         }
+        let idx = layer_id as usize;
+        if idx < self.layers.len() {
+            return self.layers[idx].get_state();
+        }
+        eprintln!("Invalid layer id: {}", layer_id);
+        vec![]
     }
 }

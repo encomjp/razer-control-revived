@@ -60,8 +60,13 @@ fn main() {
 
 
     if let Ok(mut d) = DEV_MANAGER.lock() {
-        let dbus_system = Connection::new_system()
-            .expect("failed to connect to D-Bus system bus");
+        let dbus_system = match Connection::new_system() {
+            Ok(conn) => conn,
+            Err(e) => {
+                eprintln!("Failed to connect to D-Bus system bus: {}", e);
+                std::process::exit(1);
+            }
+        };
         let proxy_ac = dbus_system.with_proxy("org.freedesktop.UPower", "/org/freedesktop/UPower/devices/line_power_AC0", time::Duration::from_millis(5000));
         use battery::OrgFreedesktopUPowerDevice;
         if let Ok(online) = proxy_ac.online() {
@@ -70,14 +75,18 @@ fn main() {
             d.restore_standard_effect();
             d.restore_bho();
             if let Ok(json) = config::Configuration::read_effects_file() {
-                EFFECT_MANAGER.lock().unwrap().load_from_save(json);
+                if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
+                    mgr.load_from_save(json);
+                }
             } else {
                 println!("No effects save, creating a new one");
                 // No effects found, start with a green static layer, just like synapse
-                EFFECT_MANAGER.lock().unwrap().push_effect(
-                    kbd::effects::Static::new(vec![0, 255, 0]), 
-                    [true; 90]
+                if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
+                    mgr.push_effect(
+                        kbd::effects::Static::new(vec![0, 255, 0]),
+                        [true; 90]
                     );
+                }
             }
         } else {
             println!("error getting current power state");
@@ -130,8 +139,12 @@ pub fn start_keyboard_animator_task() -> JoinHandle<()> {
     // Start the keyboard animator thread,
     thread::spawn(|| {
         loop {
-            if let Some(laptop) = DEV_MANAGER.lock().unwrap().get_device() {
-                EFFECT_MANAGER.lock().unwrap().update(laptop);
+            if let Ok(mut dev) = DEV_MANAGER.lock() {
+                if let Some(laptop) = dev.get_device() {
+                    if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
+                        mgr.update(laptop);
+                    }
+                }
             }
             thread::sleep(std::time::Duration::from_millis(kbd::ANIMATION_SLEEP_MS));
         }
@@ -209,8 +222,13 @@ fn start_screensaver_monitor_task() -> JoinHandle<()> {
 
 fn start_battery_monitor_task() -> JoinHandle<()> {
     thread::spawn(move || {
-        let dbus_system = Connection::new_system()
-            .expect("failed to connect to D-Bus system bus");
+        let dbus_system = match Connection::new_system() {
+            Ok(conn) => conn,
+            Err(e) => {
+                eprintln!("Battery monitor: D-Bus system unavailable ({}), skipping", e);
+                return;
+            }
+        };
         let proxy_ac = dbus_system.with_proxy("org.freedesktop.UPower", "/org/freedesktop/UPower/devices/line_power_AC0", time::Duration::from_millis(5000));
         let _id = proxy_ac.match_signal(|h: battery::OrgFreedesktopDBusPropertiesPropertiesChanged, _: &Connection, _: &Message| {
             let online: Option<&bool> = arg::prop_cast(&h.changed_properties, "Online");
@@ -250,7 +268,11 @@ fn start_battery_monitor_task() -> JoinHandle<()> {
             true
         });
         // use login1::OrgFreedesktopLogin1ManagerPrepareForSleep;
-        loop { dbus_system.process(time::Duration::from_millis(1000)).unwrap(); }
+        loop {
+            if let Err(e) = dbus_system.process(time::Duration::from_millis(1000)) {
+                eprintln!("Battery monitor D-Bus error: {}", e);
+            }
+        }
     })
 }
 
@@ -262,7 +284,13 @@ pub fn start_shutdown_task() -> JoinHandle<()> {
         
         // If we reach this point, we have a signal and it is time to exit
         println!("Received signal, cleaning up");
-        let json = EFFECT_MANAGER.lock().unwrap().save();
+        let json = match EFFECT_MANAGER.lock() {
+            Ok(mut mgr) => mgr.save(),
+            Err(e) => {
+                eprintln!("Failed to lock effect manager for save: {}", e);
+                serde_json::json!({"effects": []})
+            }
+        };
         if let Err(error) = config::Configuration::write_effects_save(json) {
             error!("Error writing config {}", error);
         }
@@ -295,40 +323,43 @@ fn handle_data(mut stream: UnixStream) {
 pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::DaemonResponse> {
     if let Ok(mut d) = DEV_MANAGER.lock() {
         return match cmd {
-            comms::DaemonCommand::SetPowerMode { ac, pwr, cpu, gpu } => {
+            comms::DaemonCommand::SetPowerMode { ac, pwr, cpu, gpu } if ac < 2 => {
                 Some(comms::DaemonResponse::SetPowerMode { result: d.set_power_mode(ac, pwr, cpu, gpu) })
             },
-            comms::DaemonCommand::SetFanSpeed { ac, rpm } => {
+            comms::DaemonCommand::SetFanSpeed { ac, rpm } if ac < 2 => {
                 Some(comms::DaemonResponse::SetFanSpeed { result: d.set_fan_rpm(ac, rpm) })
             },
-            comms::DaemonCommand::SetLogoLedState{ ac, logo_state } => {
+            comms::DaemonCommand::SetLogoLedState{ ac, logo_state } if ac < 2 => {
                 Some(comms::DaemonResponse::SetLogoLedState { result: d.set_logo_led_state(ac, logo_state) })
             },
-            comms::DaemonCommand::SetBrightness { ac, val } => {
+            comms::DaemonCommand::SetBrightness { ac, val } if ac < 2 => {
                 Some(comms::DaemonResponse::SetBrightness {result: d.set_brightness(ac, val) })
             }
-            comms::DaemonCommand::SetIdle { ac, val } => {
+            comms::DaemonCommand::SetIdle { ac, val } if ac < 2 => {
                 Some(comms::DaemonResponse::SetIdle { result: d.change_idle(ac, val) })
             }
             comms::DaemonCommand::SetSync { sync } => {
                 Some(comms::DaemonResponse::SetSync { result: d.set_sync(sync) })
             }
-            comms::DaemonCommand::GetBrightness{ac} =>  {
+            comms::DaemonCommand::GetBrightness{ac} if ac < 2 =>  {
                 Some(comms::DaemonResponse::GetBrightness { result: d.get_brightness(ac)})
             },
-            comms::DaemonCommand::GetLogoLedState{ac} => Some(comms::DaemonResponse::GetLogoLedState {logo_state: d.get_logo_led_state(ac) }),
+            comms::DaemonCommand::GetLogoLedState{ac} if ac < 2 => Some(comms::DaemonResponse::GetLogoLedState {logo_state: d.get_logo_led_state(ac) }),
             comms::DaemonCommand::GetKeyboardRGB { layer } => {
-                let map = EFFECT_MANAGER.lock().unwrap().get_map(layer);
-                Some(comms::DaemonResponse::GetKeyboardRGB {
-                    layer,
-                    rgbdata: map,
-                })
+                if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
+                    Some(comms::DaemonResponse::GetKeyboardRGB {
+                        layer,
+                        rgbdata: mgr.get_map(layer),
+                    })
+                } else {
+                    None
+                }
             }
             comms::DaemonCommand::GetSync() => Some(comms::DaemonResponse::GetSync { sync: d.get_sync() }),
-            comms::DaemonCommand::GetFanSpeed{ac} => Some(comms::DaemonResponse::GetFanSpeed { rpm: d.get_fan_rpm(ac)}),
-            comms::DaemonCommand::GetPwrLevel{ac} => Some(comms::DaemonResponse::GetPwrLevel { pwr: d.get_power_mode(ac) }),
-            comms::DaemonCommand::GetCPUBoost{ac} => Some(comms::DaemonResponse::GetCPUBoost { cpu: d.get_cpu_boost(ac) }),
-            comms::DaemonCommand::GetGPUBoost{ac} => Some(comms::DaemonResponse::GetGPUBoost { gpu: d.get_gpu_boost(ac) }),
+            comms::DaemonCommand::GetFanSpeed{ac} if ac < 2 => Some(comms::DaemonResponse::GetFanSpeed { rpm: d.get_fan_rpm(ac)}),
+            comms::DaemonCommand::GetPwrLevel{ac} if ac < 2 => Some(comms::DaemonResponse::GetPwrLevel { pwr: d.get_power_mode(ac) }),
+            comms::DaemonCommand::GetCPUBoost{ac} if ac < 2 => Some(comms::DaemonResponse::GetCPUBoost { cpu: d.get_cpu_boost(ac) }),
+            comms::DaemonCommand::GetGPUBoost{ac} if ac < 2 => Some(comms::DaemonResponse::GetGPUBoost { gpu: d.get_gpu_boost(ac) }),
             comms::DaemonCommand::SetEffect{ name, params } => {
                 let mut res = false;
                 let gui_idx = match name.as_str() {
@@ -417,7 +448,11 @@ pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::Daemon
                 let (effect, params) = d.get_standard_effect();
                 Some(comms::DaemonResponse::GetStandardEffect { effect, params })
             }
-
+            // Reject commands with invalid ac index (>= 2)
+            _ => {
+                eprintln!("Rejected command with invalid ac index: {:?}", cmd);
+                None
+            }
         };
     } else {
         return None;

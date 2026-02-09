@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
+use std::os::unix::fs::PermissionsExt;
 
 /// Razer laptop control socket path
 pub const SOCKET_PATH: &str = "/tmp/razercontrol-socket";
@@ -80,8 +81,8 @@ pub fn create() -> Option<UnixListener> {
         return None;
     }
     if let Ok(listener) = UnixListener::bind(SOCKET_PATH) {
-        let mut perms = std::fs::metadata(SOCKET_PATH).unwrap().permissions();
-        perms.set_readonly(false);
+        // Restrict socket to owner only (srw-------)
+        let perms = std::fs::Permissions::from_mode(0o600);
         if std::fs::set_permissions(SOCKET_PATH, perms).is_err() {
             eprintln!("Could not set socket permissions");
             return None;

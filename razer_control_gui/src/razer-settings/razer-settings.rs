@@ -161,7 +161,6 @@ fn get_power(ac: bool) -> Option<(u8, u8, u8)> {
     }
 
     let response = send_data(comms::DaemonCommand::GetCPUBoost { ac })?;
-    use comms::DaemonResponse::*;
     match response {
         GetCPUBoost { cpu } => result.1 = cpu,
         response => {
@@ -171,7 +170,6 @@ fn get_power(ac: bool) -> Option<(u8, u8, u8)> {
     }
 
     let response = send_data(comms::DaemonCommand::GetGPUBoost { ac })?;
-    use comms::DaemonResponse::*;
     match response {
         GetGPUBoost { gpu } => result.2 = gpu,
         response => {
@@ -1119,7 +1117,8 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let cpu_combo = cpu_combo.clone();
         let gpu_combo = gpu_combo.clone();
         power_combo.connect_selected_notify(glib::clone!(
-            @weak cpu_combo, @weak gpu_combo => move |pp| {
+            #[weak] cpu_combo, #[weak] gpu_combo,
+            move |pp| {
                 if refreshing.get() { return; }
                 let ac = is_ac.get();
                 let profile = pp.selected() as u8;
@@ -1140,7 +1139,8 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let power_combo = power_combo.clone();
         let gpu_combo = gpu_combo.clone();
         cpu_combo.connect_selected_notify(glib::clone!(
-            @weak power_combo, @weak gpu_combo => move |cb| {
+            #[weak] power_combo, #[weak] gpu_combo,
+            move |cb| {
                 if refreshing.get() { return; }
                 let ac = is_ac.get();
                 let profile = power_combo.selected() as u8;
@@ -1157,7 +1157,8 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let power_combo = power_combo.clone();
         let cpu_combo = cpu_combo.clone();
         gpu_combo.connect_selected_notify(glib::clone!(
-            @weak power_combo, @weak cpu_combo => move |gb| {
+            #[weak] power_combo, #[weak] cpu_combo,
+            move |gb| {
                 if refreshing.get() { return; }
                 let ac = is_ac.get();
                 let profile = power_combo.selected() as u8;
@@ -1186,18 +1187,21 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let is_ac = is_ac.clone();
         let refreshing_ref = refreshing.clone();
         let scale_ref = fan_slider.scale.clone();
-        fan_switch.connect_active_notify(glib::clone!(@weak scale_ref => move |sw| {
-            if refreshing_ref.get() { return; }
-            let ac = is_ac.get();
-            let state = sw.is_active();
-            if state {
-                set_fan_speed(ac, 0);
-            } else {
-                set_fan_speed(ac, min_fan_speed as i32);
-                scale_ref.set_value(min_fan_speed);
+        fan_switch.connect_active_notify(glib::clone!(
+            #[weak] scale_ref,
+            move |sw| {
+                if refreshing_ref.get() { return; }
+                let ac = is_ac.get();
+                let state = sw.is_active();
+                if state {
+                    set_fan_speed(ac, 0);
+                } else {
+                    set_fan_speed(ac, min_fan_speed as i32);
+                    scale_ref.set_value(min_fan_speed);
+                }
+                scale_ref.set_sensitive(!state);
             }
-            scale_ref.set_sensitive(!state);
-        }));
+        ));
     }
 
     // Live-sync: poll daemon every 2s so widget changes appear in GUI
@@ -1478,13 +1482,16 @@ fn make_battery_page() -> SettingsPage {
         {
             let refreshing = refreshing.clone();
             let scale_ref = bho_slider.scale.clone();
-            bho_switch.connect_active_notify(glib::clone!(@weak scale_ref => move |sw| {
-                if refreshing.get() { return; }
-                let state = sw.is_active();
-                let threshold = scale_ref.value() as u8;
-                set_bho(state, threshold);
-                scale_ref.set_sensitive(state);
-            }));
+            bho_switch.connect_active_notify(glib::clone!(
+                #[weak] scale_ref,
+                move |sw| {
+                    if refreshing.get() { return; }
+                    let state = sw.is_active();
+                    let threshold = scale_ref.value() as u8;
+                    set_bho(state, threshold);
+                    scale_ref.set_sensitive(state);
+                }
+            ));
         }
 
         // Live-sync: poll daemon every 2s so widget changes appear in GUI
@@ -1532,7 +1539,7 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
     let row = SettingsRow::new("Name", &app_name);
     section.add_row(&row.row);
 
-    let version_label = gtk::Label::new(Some("v0.2.4"));
+    let version_label = gtk::Label::new(Some("v0.2.5"));
     let row = SettingsRow::new("Version", &version_label);
     section.add_row(&row.row);
 

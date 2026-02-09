@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.2.4
+Version:        0.2.5
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -70,6 +70,19 @@ udevadm trigger
 %systemd_user_postun_with_restart razercontrol.service
 
 %changelog
+* Mon Feb 09 2026 EncomJP <encomjp@users.noreply.github.com> - 0.2.5-1
+- Security: restrict daemon socket permissions to owner-only (0600)
+- Fix buffer overflow in set_standard_effect params
+- Fix array index panics in keyboard effect constructors
+- Add bounds validation for AC state index in daemon commands
+- Fix mutex poison cascade crashes in daemon threads
+- Fix D-Bus connection panics with graceful fallback
+- Fix HOME environment variable panic in config
+- Fix brightness overflow when value exceeds 100
+- Replace all unsafe JSON unwrap chains with proper error handling
+- Fix deprecated glib::clone! syntax warnings
+- Clean up all 46 compiler warnings (zero warnings now)
+
 * Fri Feb 06 2026 EncomJP <encomjp@users.noreply.github.com> - 0.2.4-1
 - Add 12 new Razer laptop models (Blade 15/16/18 2023-2025, Stealth 2015/2016, Studio Edition)
 - Settings persistence: all settings saved to config and restored on boot
