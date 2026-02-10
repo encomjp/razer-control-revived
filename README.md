@@ -1,6 +1,7 @@
 # Razer Laptop Control - Revived
 
-<img width="516" height="466" alt="image" src="https://github.com/user-attachments/assets/a0d86ded-168c-49e4-b0af-7ebada86af4e" />
+<img width="525" height="439" alt="image" src="https://github.com/user-attachments/assets/84b4fba5-6b77-4e13-aee5-5ac5f0b2b631" />
+
 
 <img width="1059" height="870" alt="image" src="https://github.com/user-attachments/assets/48b10737-76ed-45a0-886b-df5ba6bea30d" />
 
