@@ -54,19 +54,19 @@ jobs:
           mkdir -p $APPDIR/usr/bin
           mkdir -p $APPDIR/usr/share/applications
           mkdir -p $APPDIR/usr/share/razercontrol
-          mkdir -p $APPDIR/usr/share/icons/hicolor/scalable/apps
+          mkdir -p $APPDIR/usr/share/icons/hicolor/256x256/apps
 
           cp razer_control_gui/target/release/razer-settings $APPDIR/usr/bin/
           cp razer_control_gui/data/gui/razer-settings.desktop $APPDIR/usr/share/applications/
           cp razer_control_gui/data/devices/laptops.json $APPDIR/usr/share/razercontrol/
-          cp razer_control_gui/data/gui/com.github.encomjp.razercontrol.svg $APPDIR/usr/share/icons/hicolor/scalable/apps/
+          cp razer_control_gui/data/gui/icon.png $APPDIR/usr/share/icons/hicolor/256x256/apps/com.github.encomjp.razercontrol.png
 
           export OUTPUT="RazerControl-${APP_VERSION}-x86_64.AppImage"
           ./linuxdeploy-x86_64.AppImage \
             --appimage-extract-and-run \
             --appdir $APPDIR \
             --desktop-file razer_control_gui/data/gui/razer-settings.desktop \
-            --icon-file razer_control_gui/data/gui/com.github.encomjp.razercontrol.svg \
+            --icon-file razer_control_gui/data/gui/icon.png \
             --output appimage
 
       - name: Upload AppImage
@@ -161,7 +161,7 @@ jobs:
           mkdir -p $PKG/usr/bin
           mkdir -p $PKG/usr/share/razercontrol
           mkdir -p $PKG/usr/share/applications
-          mkdir -p $PKG/usr/share/icons/hicolor/scalable/apps
+          mkdir -p $PKG/usr/share/icons/hicolor/256x256/apps
           mkdir -p $PKG/etc/udev/rules.d
           mkdir -p $PKG/usr/lib/systemd/user
 
@@ -170,7 +170,7 @@ jobs:
           cp razer_control_gui/target/release/daemon $PKG/usr/bin/razer-daemon
           cp razer_control_gui/data/devices/laptops.json $PKG/usr/share/razercontrol/
           cp razer_control_gui/data/gui/razer-settings.desktop $PKG/usr/share/applications/
-          cp razer_control_gui/data/gui/com.github.encomjp.razercontrol.svg $PKG/usr/share/icons/hicolor/scalable/apps/
+          cp razer_control_gui/data/gui/icon.png $PKG/usr/share/icons/hicolor/256x256/apps/com.github.encomjp.razercontrol.png
           cp razer_control_gui/data/udev/99-hidraw-permissions.rules $PKG/etc/udev/rules.d/
           cp razer_control_gui/data/services/systemd/razercontrol.service $PKG/usr/lib/systemd/user/
 
