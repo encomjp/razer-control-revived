@@ -134,7 +134,10 @@ sudo pacman -S rust cargo dbus libusb hidapi pkgconf systemd gtk4 libadwaita git
 
 Add to your flake inputs:
 ```nix
-inputs.razerdaemon.url = "github:encomjp/razercontrol-revived";
+inputs.razerdaemon = {
+  url = "github:encomjp/razer-control-revived";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
 ```
 
 Import the module:
@@ -382,7 +385,7 @@ If your Razer laptop isn't supported, you can add it:
 
 ## ⚠️ Warning
 
-This software is provided AS-IS with **NO WARRANTY**. 
+This software is provided AS-IS with **NO WARRANTY**.
 
 - ❌ Not affiliated with Razer Inc.
 - ❌ Not responsible for any damage to your hardware
