@@ -1809,6 +1809,67 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
     row.set_subtitle("Report issues and contribute");
     section.add_row(&row.row);
 
+    // Check for Updates row
+    let update_box = gtk::Box::new(gtk::Orientation::Horizontal, 8);
+    update_box.set_halign(gtk::Align::End);
+
+    let update_status = gtk::Label::new(None);
+    update_status.add_css_class("dim-label");
+    update_status.set_halign(gtk::Align::End);
+    update_box.append(&update_status);
+
+    let update_button = gtk::Button::with_label("Check for Updates");
+    update_button.add_css_class("flat");
+    let status_clone = update_status.clone();
+    update_button.connect_clicked(move |btn| {
+        btn.set_sensitive(false);
+        status_clone.set_text("Checking...");
+        let status_ref = status_clone.clone();
+        let btn_ref = btn.clone();
+        // Run curl in background, poll result after a short delay
+        glib::timeout_add_local_once(Duration::from_millis(100), move || {
+            let current = env!("CARGO_PKG_VERSION");
+            let msg = match std::process::Command::new("curl")
+                .args(["-sf", "--max-time", "10", "https://api.github.com/repos/encomjp/razer-control-revived/releases/latest"])
+                .output()
+            {
+                Ok(output) => {
+                    let body = String::from_utf8_lossy(&output.stdout);
+                    // GitHub API returns `"tag_name": "v0.x.x"` with spaces -- strip whitespace before parsing
+                    let body_clean = body.replace(" ", "").replace("\n", "");
+                    if let Some(tag) = body_clean.split("\"tag_name\":\"").nth(1).and_then(|s| s.split('"').next()) {
+                        let remote = tag.trim_start_matches('v');
+                        let local = current.trim_start_matches('v');
+                        if remote != local {
+                            let r: Vec<u32> = remote.split('.').filter_map(|x| x.parse().ok()).collect();
+                            let l: Vec<u32> = local.split('.').filter_map(|x| x.parse().ok()).collect();
+                            let newer = r.iter().zip(l.iter()).fold(std::cmp::Ordering::Equal, |acc, (a, b)| {
+                                if acc != std::cmp::Ordering::Equal { acc } else { a.cmp(b) }
+                            });
+                            if newer == std::cmp::Ordering::Greater || (newer == std::cmp::Ordering::Equal && r.len() > l.len()) {
+                                format!("Update available: v{}", remote)
+                            } else {
+                                "You're up to date!".to_string()
+                            }
+                        } else {
+                            "You're up to date!".to_string()
+                        }
+                    } else {
+                        "Could not parse response".to_string()
+                    }
+                }
+                Err(_) => "Network error".to_string(),
+            };
+            status_ref.set_text(&msg);
+            btn_ref.set_sensitive(true);
+        });
+    });
+    update_box.append(&update_button);
+
+    let row = SettingsRow::new("Updates", &update_box);
+    row.set_subtitle("Check GitHub for a newer release");
+    section.add_row(&row.row);
+
     // Device Information Section
     let section = page.add_section(Some("Device Information"));
 

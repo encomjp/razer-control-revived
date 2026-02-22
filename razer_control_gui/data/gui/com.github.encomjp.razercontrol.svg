@@ -1,65 +1,39 @@
-<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <!-- Matte Black Chassis Finish -->
-        <radialGradient id="matteFinish" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" style="stop-color:#1a1a1a" />
-            <stop offset="100%" style="stop-color:#050505" />
-        </radialGradient>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Gear (8 teeth, perfectly centered at 24,24) -->
+  <path d="
+    M22 3.5 L26 3.5 L27 7.5
+    C28.6 7.8 30.1 8.5 31.3 9.4 L35 7.2 L37.8 10 L35.6 13.7
+    C36.5 14.9 37.2 16.4 37.5 18 L41.5 19 L41.5 23 L37.5 24
+    C37.2 25.6 36.5 27.1 35.6 28.3 L37.8 32 L35 34.8 L31.3 32.6
+    C30.1 33.5 28.6 34.2 27 34.5 L26 38.5 L22 38.5 L21 34.5
+    C19.4 34.2 17.9 33.5 16.7 32.6 L13 34.8 L10.2 32 L12.4 28.3
+    C11.5 27.1 10.8 25.6 10.5 24 L6.5 23 L6.5 19 L10.5 18
+    C10.8 16.4 11.5 14.9 12.4 13.7 L10.2 10 L13 7.2 L16.7 9.4
+    C17.9 8.5 19.4 7.8 21 7.5 Z
+  " fill="none" stroke="#44d62c" stroke-width="1.5" stroke-linejoin="round"/>
 
-        <!-- Neon Logo Glow -->
-        <filter id="logoGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feFlood flood-color="#44ff00" flood-opacity="1" result="color" />
-            <feComposite in="color" in2="blur" operator="in" result="glow" />
-            <feMerge>
-                <feMergeNode in="glow" />
-                <feMergeNode in="SourceGraphic" />
-            </feMerge>
-        </filter>
-
-        <!-- Metal Bezel -->
-        <linearGradient id="bezelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#333" />
-            <stop offset="100%" style="stop-color:#111" />
-        </linearGradient>
-    </defs>
-
-    <!-- Circular Outer Shell -->
-    <circle cx="256" cy="256" r="240" fill="url(#bezelGradient)" />
-    <circle cx="256" cy="256" r="232" fill="url(#matteFinish)" />
-
-    <!-- Stylized Laptop Lid Silhouette -->
-    <g transform="translate(106, 146)">
-        <!-- Main Lid Body -->
-        <rect width="300" height="220" rx="12" fill="#0d0d0d" stroke="#222" stroke-width="2" />
-        
-        <!-- Bottom Hinge/Lip line -->
-        <path d="M0 210 L300 210" stroke="#000" stroke-width="4" />
-        
-        <!-- Stylized Triple Snake Logo (Abstracted) -->
-        <g filter="url(#logoGlow)" transform="translate(150, 105)">
-            <!-- Central Body -->
-            <circle r="12" fill="#44ff00" />
-            
-            <!-- Snake Head 1 (Top) -->
-            <path d="M0 -10 L0 -45 Q0 -55 10 -55" fill="none" stroke="#44ff00" stroke-width="6" stroke-linecap="round" />
-            
-            <!-- Snake Head 2 (Left) -->
-            <path d="M-8 4 L-35 25 Q-45 35 -35 45" fill="none" stroke="#44ff00" stroke-width="6" stroke-linecap="round" />
-            
-            <!-- Snake Head 3 (Right) -->
-            <path d="M8 4 L35 25 Q45 35 35 45" fill="none" stroke="#44ff00" stroke-width="6" stroke-linecap="round" />
-            
-            <!-- Decorative Central Core -->
-            <circle r="4" fill="#000" />
-        </g>
-        
-        <!-- Lid Detail Lines -->
-        <line x1="20" y1="20" x2="40" y2="20" stroke="#44ff00" stroke-width="1" opacity="0.3" />
-        <line x1="260" y1="20" x2="280" y2="20" stroke="#44ff00" stroke-width="1" opacity="0.3" />
-    </g>
-
-    <!-- Decorative Dashboard Ring -->
-    <path d="M256 50 A206 206 0 0 1 462 256" fill="none" stroke="#44ff00" stroke-width="2" stroke-dasharray="2 10" opacity="0.4" />
-    <path d="M256 462 A206 206 0 0 1 50 256" fill="none" stroke="#44ff00" stroke-width="2" stroke-dasharray="2 10" opacity="0.4" />
+  <!-- Snake head, centered in gear -->
+  <g transform="translate(24, 21) scale(0.88) translate(-1.5, -0.5)">
+    <path d="
+      M-5,-6
+      C-3,-7.5 1,-8 3.5,-6.5
+      C5.5,-5 7,-3 7.5,-0.5
+      C8,2 7,3.5 5,4.5
+      L3,5.5
+      C2,6 1,7 -0.5,7.5
+      C-2,8 -3.5,7.5 -4.5,6
+      C-5,5 -5,3.5 -4,2.5
+      L-2,1
+      C-0.5,0 -1,-1.5 -2.5,-2
+      L-5,-2.5
+      C-6.5,-3 -7,-4.5 -5,-6 Z
+    " fill="#44d62c"/>
+    <!-- Eye -->
+    <circle cx="1.5" cy="-3.5" r="1.3" fill="#111"/>
+    <circle cx="2"   cy="-3.8" r="0.4" fill="#44d62c"/>
+    <!-- Nostril -->
+    <ellipse cx="5.5" cy="-1.5" rx="0.5" ry="0.3" fill="#111" transform="rotate(-20,5.5,-1.5)"/>
+    <!-- Tongue -->
+    <path d="M7.5,-0.5 L10,0.5 M7.5,-0.5 L10,-1.8" fill="none" stroke="#44d62c" stroke-width="0.7" stroke-linecap="round"/>
+  </g>
 </svg>
