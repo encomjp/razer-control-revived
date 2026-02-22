@@ -262,6 +262,16 @@ fn start_battery_monitor_task() -> JoinHandle<()> {
                     d.light_off();
                 } else {
                     d.restore_light();
+                    
+                    // The system just woke up. UPower can sometimes be slow to update its internal AC state
+                    // and fire DBus signals. So we wait a few seconds and forcefully check again.
+                    thread::spawn(|| {
+                        thread::sleep(time::Duration::from_secs(3));
+                        if let Ok(mut dev) = DEV_MANAGER.lock() {
+                            println!("Delayed AC state check after wake");
+                            dev.set_ac_state_get();
+                        }
+                    });
                 }
             }
             true

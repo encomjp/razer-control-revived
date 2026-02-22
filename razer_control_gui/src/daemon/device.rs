@@ -326,7 +326,10 @@ impl DeviceManager {
 
     pub fn set_logo_led_state(&mut self, ac:usize, logo_state: u8) -> bool {
         let mut res: bool = false;
+        let mut is_synced = false;
+        
         if let Some(config) = self.get_config() {
+            is_synced = config.sync;
             config.power[ac].logo_state = logo_state;
             if config.sync {
                 let other = (ac + 1) & 0x01;
@@ -340,7 +343,7 @@ impl DeviceManager {
         if let Some(laptop) = self.get_device() {
             let state = laptop.get_ac_state();
            
-            if state != ac {
+            if state != ac && !is_synced {
                 res = true;
             } else {
                 res = laptop.set_logo_led_state(logo_state);
@@ -368,7 +371,10 @@ impl DeviceManager {
         let mut res: bool = false;
         let clamped = if brightness > 100 { 100u16 } else { brightness as u16 };
         let _val = clamped * 255 / 100;
+        let mut is_synced = false;
+        
         if let Some(config) = self.get_config() {
+            is_synced = config.sync;
             config.power[ac].brightness = _val as u8;
             if config.sync {
                 let other = (ac + 1) & 0x01;
@@ -381,7 +387,8 @@ impl DeviceManager {
  
         if let Some(laptop) = self.get_device() {
             let state = laptop.get_ac_state();
-            if state != ac {
+            // If sync is enabled, the new brightness applies to both states, so update hardware regardless
+            if state != ac && !is_synced {
                 res = true;
             } else {
                 res = laptop.set_brightness(_val as u8);

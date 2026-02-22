@@ -59,7 +59,7 @@ PlasmoidItem {
     // --- Compact representation (panel) ---
     compactRepresentation: MouseArea {
         id: compactMouse
-        Layout.minimumWidth: compactRow.implicitWidth + Kirigami.Units.smallSpacing * 2
+        Layout.minimumWidth: compactRow.implicitWidth + Kirigami.Units.largeSpacing * 2
         Layout.minimumHeight: Kirigami.Units.iconSizes.small
         hoverEnabled: true
         onClicked: root.expanded = !root.expanded
@@ -67,9 +67,9 @@ PlasmoidItem {
         RowLayout {
             id: compactRow
             anchors.centerIn: parent
-            spacing: Kirigami.Units.smallSpacing
+            spacing: Kirigami.Units.largeSpacing
             Kirigami.Icon {
-                source: "preferences-system-power-management"
+                source: "com.github.encomjp.razercontrol"
                 Layout.preferredWidth: Kirigami.Units.iconSizes.small
                 Layout.preferredHeight: Kirigami.Units.iconSizes.small
             }
@@ -107,8 +107,8 @@ PlasmoidItem {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: Kirigami.Units.largeSpacing
-            spacing: Kirigami.Units.smallSpacing
+            anchors.margins: Kirigami.Units.smallSpacing
+            spacing: Kirigami.Units.largeSpacing
 
             // ===== HEADER (clickable to open app) =====
             MouseArea {
@@ -120,14 +120,14 @@ PlasmoidItem {
                 RowLayout {
                     id: headerRow
                     anchors.fill: parent
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.largeSpacing
 
                     Kirigami.Icon {
-                        source: "preferences-system-power-management"
+                        source: "com.github.encomjp.razercontrol"
                         Layout.preferredWidth: Kirigami.Units.iconSizes.medium
                         Layout.preferredHeight: Kirigami.Units.iconSizes.medium
                     }
-                    Kirigami.Heading { text: "Razer Control"; level: 3 }
+                    Kirigami.Heading { text: "Razer Control"; level: 3; font.weight: Font.DemiBold }
                     Item { Layout.fillWidth: true }
                     Kirigami.Icon {
                         source: "go-next-symbolic"
@@ -137,13 +137,13 @@ PlasmoidItem {
                 }
             }
 
-            Kirigami.Separator { Layout.fillWidth: true; Layout.topMargin: Kirigami.Units.smallSpacing }
+            Kirigami.Separator { Layout.fillWidth: true; Layout.topMargin: Kirigami.Units.largeSpacing }
 
             // ===== SYSTEM MONITOR (merged temps + power + util) =====
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: monitorCol.implicitHeight + Kirigami.Units.smallSpacing * 2
-                radius: 8
+                implicitHeight: monitorCol.implicitHeight + Kirigami.Units.largeSpacing * 2
+                radius: Kirigami.Units.largeSpacing
                 color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.3)
                 border.width: 1
                 border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.1)
@@ -152,19 +152,19 @@ PlasmoidItem {
                     id: monitorCol
                     anchors.fill: parent
                     anchors.margins: Kirigami.Units.smallSpacing
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.largeSpacing
 
                     // CPU
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.largeSpacing
                         Kirigami.Icon { source: "cpu-symbolic"; Layout.preferredWidth: 18; Layout.preferredHeight: 18; opacity: 0.9 }
                         QQC2.Label { 
                             text: cpuName; 
                             Layout.fillWidth: true; 
                             elide: Text.ElideRight; 
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize; 
-                            font.weight: Font.Medium
+                            font.weight: Font.DemiBold
                         }
                         QQC2.Label {
                             text: cpuTemp !== "--" ? cpuTemp + "°C" : ""
@@ -172,7 +172,7 @@ PlasmoidItem {
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight
-                            color: cpuTemp !== "--" ? (parseFloat(cpuTemp) > 90 ? "#ff4444" : parseFloat(cpuTemp) > 75 ? "#ffaa00" : "#44d62c") : Kirigami.Theme.textColor
+                            color: cpuTemp !== "--" ? (parseFloat(cpuTemp) > 90 ? "Kirigami.Theme.negativeTextColor" : parseFloat(cpuTemp) > 75 ? "Kirigami.Theme.neutralTextColor" : "Kirigami.Theme.positiveTextColor") : Kirigami.Theme.textColor
                         }
                         QQC2.Label { 
                             text: cpuFreq !== "--" ? cpuFreq + " GHz" : ""; 
@@ -191,7 +191,7 @@ PlasmoidItem {
                             text: cpuPower !== "--" ? cpuPower + " W" : ""; 
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight; 
-                            font.weight: Font.Medium;
+                            font.weight: Font.DemiBold;
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                         }
                         QQC2.Label { 
@@ -206,7 +206,7 @@ PlasmoidItem {
                     // iGPU
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.largeSpacing
                         visible: igpuTemp !== "--" || igpuPower !== "--"
                         Kirigami.Icon { source: "video-display-symbolic"; Layout.preferredWidth: 18; Layout.preferredHeight: 18; opacity: 0.9 }
                         QQC2.Label { 
@@ -214,7 +214,7 @@ PlasmoidItem {
                             Layout.fillWidth: true; 
                             elide: Text.ElideRight; 
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize;
-                            font.weight: Font.Medium
+                            font.weight: Font.DemiBold
                         }
                         QQC2.Label {
                             text: igpuTemp !== "--" ? igpuTemp + "°C" : ""
@@ -222,7 +222,7 @@ PlasmoidItem {
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight
-                            color: igpuTemp !== "--" ? (parseFloat(igpuTemp) > 90 ? "#ff4444" : parseFloat(igpuTemp) > 75 ? "#ffaa00" : "#44d62c") : Kirigami.Theme.textColor
+                            color: igpuTemp !== "--" ? (parseFloat(igpuTemp) > 90 ? "Kirigami.Theme.negativeTextColor" : parseFloat(igpuTemp) > 75 ? "Kirigami.Theme.neutralTextColor" : "Kirigami.Theme.positiveTextColor") : Kirigami.Theme.textColor
                         }
                         QQC2.Label { 
                             text: igpuFreq !== "--" ? igpuFreq + " MHz" : ""; 
@@ -241,7 +241,7 @@ PlasmoidItem {
                             text: igpuPower !== "--" ? igpuPower + " W" : ""; 
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight; 
-                            font.weight: Font.Medium;
+                            font.weight: Font.DemiBold;
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                         }
                         QQC2.Label { 
@@ -256,7 +256,7 @@ PlasmoidItem {
                     // dGPU
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.largeSpacing
                         Kirigami.Icon { 
                             source: "video-display-symbolic"; 
                             Layout.preferredWidth: 18; 
@@ -268,7 +268,7 @@ PlasmoidItem {
                             Layout.fillWidth: true; 
                             elide: Text.ElideRight; 
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize;
-                            font.weight: Font.Medium
+                            font.weight: Font.DemiBold
                             opacity: dgpuTemp !== "--" ? 1.0 : 0.5
                         }
                         QQC2.Label {
@@ -277,7 +277,7 @@ PlasmoidItem {
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight
-                            color: dgpuTemp !== "--" ? (parseFloat(dgpuTemp) > 85 ? "#ff4444" : parseFloat(dgpuTemp) > 70 ? "#ffaa00" : "#44d62c") : Kirigami.Theme.disabledTextColor
+                            color: dgpuTemp !== "--" ? (parseFloat(dgpuTemp) > 85 ? "Kirigami.Theme.negativeTextColor" : parseFloat(dgpuTemp) > 70 ? "Kirigami.Theme.neutralTextColor" : "Kirigami.Theme.positiveTextColor") : Kirigami.Theme.disabledTextColor
                         }
                         QQC2.Label { 
                             text: dgpuFreq !== "--" ? dgpuFreq + " MHz" : ""; 
@@ -296,7 +296,7 @@ PlasmoidItem {
                             text: dgpuPower !== "--" ? dgpuPower + " W" : ""; 
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight; 
-                            font.weight: Font.Medium;
+                            font.weight: Font.DemiBold;
                             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                         }
                         QQC2.Label { 
@@ -313,8 +313,8 @@ PlasmoidItem {
             // ===== BATTERY BAR =====
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: batteryCol.implicitHeight + Kirigami.Units.smallSpacing * 2
-                radius: 8
+                implicitHeight: batteryCol.implicitHeight + Kirigami.Units.largeSpacing * 2
+                radius: Kirigami.Units.largeSpacing
                 visible: batteryPct !== "--"
                 color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.3)
                 border.width: 1
@@ -324,11 +324,11 @@ PlasmoidItem {
                     id: batteryCol
                     anchors.fill: parent
                     anchors.margins: Kirigami.Units.smallSpacing
-                    spacing: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.largeSpacing
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.largeSpacing
                         Kirigami.Icon {
                             source: batteryStatus === "Charging" ? "battery-charging" : batteryStatus === "Not charging" ? "battery-level-80-charging" : "battery"
                             Layout.preferredWidth: 18; Layout.preferredHeight: 18
@@ -340,7 +340,7 @@ PlasmoidItem {
                                 if (batteryStatus === "Full") return "Battery – Full";
                                 return "Battery – Discharging";
                             }
-                            font.weight: Font.Medium
+                            font.weight: Font.DemiBold
                         }
                         Item { Layout.fillWidth: true }
                         QQC2.Label {
@@ -348,7 +348,7 @@ PlasmoidItem {
                             text: batteryStatus === "Charging" ? "+" + batteryWatts + " W" : "−" + batteryWatts + " W"
                             font.bold: true
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-                            color: batteryStatus === "Charging" ? "#44d62c" : "#ffaa00"
+                            color: batteryStatus === "Charging" ? "Kirigami.Theme.positiveTextColor" : "Kirigami.Theme.neutralTextColor"
                         }
                         QQC2.Label { 
                             text: batteryPct + "%"; 
@@ -364,13 +364,13 @@ PlasmoidItem {
                 }
             }
 
-            Kirigami.Separator { Layout.fillWidth: true; Layout.topMargin: Kirigami.Units.smallSpacing }
+            Kirigami.Separator { Layout.fillWidth: true; Layout.topMargin: Kirigami.Units.largeSpacing }
 
             // ===== SETTINGS (single grouped card) =====
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: settingsCol.implicitHeight + Kirigami.Units.smallSpacing * 2
-                radius: 8
+                implicitHeight: settingsCol.implicitHeight + Kirigami.Units.largeSpacing * 2
+                radius: Kirigami.Units.largeSpacing
                 color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.3)
                 border.width: 1
                 border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.1)
@@ -385,7 +385,7 @@ PlasmoidItem {
                     MouseArea {
                         id: profileMouse
                         Layout.fillWidth: true
-                        implicitHeight: profileRow.implicitHeight + Kirigami.Units.smallSpacing
+                        implicitHeight: profileRow.implicitHeight + Kirigami.Units.largeSpacing
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             root._lastWriteTime = Date.now();
@@ -397,28 +397,28 @@ PlasmoidItem {
                         }
                         Rectangle {
                             anchors.fill: parent; radius: 4
-                            color: profileMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+                            color: profileMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"
                         }
                         RowLayout {
-                            id: profileRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.smallSpacing; anchors.rightMargin: Kirigami.Units.smallSpacing
+                            id: profileRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.largeSpacing; anchors.rightMargin: Kirigami.Units.largeSpacing
                             Kirigami.Icon { source: "system-run"; Layout.preferredWidth: 18; Layout.preferredHeight: 18 }
-                            QQC2.Label { text: "Profile"; font.weight: Font.Medium; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
+                            QQC2.Label { text: "Profile"; font.weight: Font.DemiBold; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
                             Item { Layout.fillWidth: true }
                             QQC2.Label {
                                 text: { switch(powerProfile) { case "0": return "Balanced"; case "1": return "Gaming"; case "2": return "Creator"; case "3": return "Silent"; case "4": return "Custom"; default: return "--"; } }
-                                font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize; color: "#44d62c"
+                                font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize; color: "Kirigami.Theme.positiveTextColor"
                             }
                             Kirigami.Icon { source: "go-next-symbolic"; Layout.preferredWidth: 12; Layout.preferredHeight: 12; opacity: 0.4 }
                         }
                     }
 
-                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.smallSpacing; Layout.rightMargin: Kirigami.Units.smallSpacing; implicitHeight: 1; color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07) }
+                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.largeSpacing; Layout.rightMargin: Kirigami.Units.largeSpacing; implicitHeight: 1; color: Kirigami.Theme.alternateBackgroundColor }
 
                     // Fan
                     MouseArea {
                         id: fanMouse
                         Layout.fillWidth: true
-                        implicitHeight: fanRow.implicitHeight + Kirigami.Units.smallSpacing
+                        implicitHeight: fanRow.implicitHeight + Kirigami.Units.largeSpacing
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             root._lastWriteTime = Date.now();
@@ -436,12 +436,12 @@ PlasmoidItem {
                         }
                         Rectangle {
                             anchors.fill: parent; radius: 4
-                            color: fanMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+                            color: fanMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"
                         }
                         RowLayout {
-                            id: fanRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.smallSpacing; anchors.rightMargin: Kirigami.Units.smallSpacing
+                            id: fanRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.largeSpacing; anchors.rightMargin: Kirigami.Units.largeSpacing
                             Kirigami.Icon { source: "speedometer-symbolic"; Layout.preferredWidth: 18; Layout.preferredHeight: 18 }
-                            QQC2.Label { text: "Fan"; font.weight: Font.Medium; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
+                            QQC2.Label { text: "Fan"; font.weight: Font.DemiBold; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
                             Item { Layout.fillWidth: true }
                             QQC2.Label {
                                 text: fanSpeed === "--" ? "--" : (fanSpeed === "0" ? "Auto" : fanSpeed + " RPM")
@@ -451,13 +451,13 @@ PlasmoidItem {
                         }
                     }
 
-                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.smallSpacing; Layout.rightMargin: Kirigami.Units.smallSpacing; implicitHeight: 1; color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07) }
+                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.largeSpacing; Layout.rightMargin: Kirigami.Units.largeSpacing; implicitHeight: 1; color: Kirigami.Theme.alternateBackgroundColor }
 
                     // KB Brightness
                     MouseArea {
                         id: brightMouse
                         Layout.fillWidth: true
-                        implicitHeight: brightRow.implicitHeight + Kirigami.Units.smallSpacing
+                        implicitHeight: brightRow.implicitHeight + Kirigami.Units.largeSpacing
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             root._lastWriteTime = Date.now();
@@ -472,12 +472,12 @@ PlasmoidItem {
                         }
                         Rectangle {
                             anchors.fill: parent; radius: 4
-                            color: brightMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+                            color: brightMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"
                         }
                         RowLayout {
-                            id: brightRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.smallSpacing; anchors.rightMargin: Kirigami.Units.smallSpacing
+                            id: brightRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.largeSpacing; anchors.rightMargin: Kirigami.Units.largeSpacing
                             Kirigami.Icon { source: "brightness-high-symbolic"; Layout.preferredWidth: 18; Layout.preferredHeight: 18 }
-                            QQC2.Label { text: "KB Brightness"; font.weight: Font.Medium; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
+                            QQC2.Label { text: "KB Brightness"; font.weight: Font.DemiBold; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
                             Item { Layout.fillWidth: true }
                             QQC2.Label {
                                 text: brightness === "0" ? "Off" : brightness !== "--" ? brightness + "%" : "--"
@@ -488,13 +488,13 @@ PlasmoidItem {
                         }
                     }
 
-                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.smallSpacing; Layout.rightMargin: Kirigami.Units.smallSpacing; implicitHeight: 1; color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07) }
+                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.largeSpacing; Layout.rightMargin: Kirigami.Units.largeSpacing; implicitHeight: 1; color: Kirigami.Theme.alternateBackgroundColor }
 
                     // Logo
                     MouseArea {
                         id: logoMouse
                         Layout.fillWidth: true
-                        implicitHeight: logoRow.implicitHeight + Kirigami.Units.smallSpacing
+                        implicitHeight: logoRow.implicitHeight + Kirigami.Units.largeSpacing
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             root._lastWriteTime = Date.now();
@@ -506,29 +506,29 @@ PlasmoidItem {
                         }
                         Rectangle {
                             anchors.fill: parent; radius: 4
-                            color: logoMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+                            color: logoMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"
                         }
                         RowLayout {
-                            id: logoRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.smallSpacing; anchors.rightMargin: Kirigami.Units.smallSpacing
+                            id: logoRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.largeSpacing; anchors.rightMargin: Kirigami.Units.largeSpacing
                             Kirigami.Icon { source: "preferences-desktop-display-color"; Layout.preferredWidth: 18; Layout.preferredHeight: 18 }
-                            QQC2.Label { text: "Logo"; font.weight: Font.Medium; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
+                            QQC2.Label { text: "Logo"; font.weight: Font.DemiBold; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
                             Item { Layout.fillWidth: true }
                             QQC2.Label {
                                 text: { switch(logoMode) { case "0": return "Off"; case "1": return "On"; case "2": return "Breathing"; default: return "--"; } }
                                 font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-                                color: logoMode === "0" ? Kirigami.Theme.disabledTextColor : "#44d62c"
+                                color: logoMode === "0" ? Kirigami.Theme.disabledTextColor : "Kirigami.Theme.positiveTextColor"
                             }
                             Kirigami.Icon { source: "go-next-symbolic"; Layout.preferredWidth: 12; Layout.preferredHeight: 12; opacity: 0.4 }
                         }
                     }
 
-                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.smallSpacing; Layout.rightMargin: Kirigami.Units.smallSpacing; implicitHeight: 1; color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07) }
+                    Rectangle { Layout.fillWidth: true; Layout.leftMargin: Kirigami.Units.largeSpacing; Layout.rightMargin: Kirigami.Units.largeSpacing; implicitHeight: 1; color: Kirigami.Theme.alternateBackgroundColor }
 
                     // Charge Limit
                     MouseArea {
                         id: bhoMouse
                         Layout.fillWidth: true
-                        implicitHeight: bhoRow.implicitHeight + Kirigami.Units.smallSpacing
+                        implicitHeight: bhoRow.implicitHeight + Kirigami.Units.largeSpacing
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             root._lastWriteTime = Date.now();
@@ -539,12 +539,12 @@ PlasmoidItem {
                         }
                         Rectangle {
                             anchors.fill: parent; radius: 4
-                            color: bhoMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+                            color: bhoMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.2) : "transparent"
                         }
                         RowLayout {
-                            id: bhoRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.smallSpacing; anchors.rightMargin: Kirigami.Units.smallSpacing
+                            id: bhoRow; anchors.fill: parent; anchors.leftMargin: Kirigami.Units.largeSpacing; anchors.rightMargin: Kirigami.Units.largeSpacing
                             Kirigami.Icon { source: "battery-good-charging-symbolic"; Layout.preferredWidth: 18; Layout.preferredHeight: 18 }
-                            QQC2.Label { text: "Charge Limit"; font.weight: Font.Medium; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
+                            QQC2.Label { text: "Charge Limit"; font.weight: Font.DemiBold; font.pixelSize: Kirigami.Theme.smallFont.pixelSize }
                             Item { Layout.fillWidth: true }
                             QQC2.Label {
                                 visible: bhoStatus.indexOf("On") >= 0
@@ -557,7 +557,7 @@ PlasmoidItem {
                             QQC2.Label {
                                 text: bhoStatus.indexOf("On") >= 0 ? "On" : "Off"
                                 font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-                                color: bhoStatus.indexOf("On") >= 0 ? "#44d62c" : Kirigami.Theme.disabledTextColor
+                                color: bhoStatus.indexOf("On") >= 0 ? "Kirigami.Theme.positiveTextColor" : Kirigami.Theme.disabledTextColor
                             }
                             Kirigami.Icon { source: "go-next-symbolic"; Layout.preferredWidth: 12; Layout.preferredHeight: 12; opacity: 0.4 }
                         }

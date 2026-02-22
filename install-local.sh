@@ -23,22 +23,9 @@ sudo install -Dm755 "$BUILD_DIR/target/release/razer-cli" /usr/bin/razer-cli
 echo "Installing desktop entry..."
 sudo install -Dm644 "$BUILD_DIR/data/gui/razer-settings.desktop" /usr/share/applications/razer-settings.desktop
 
-# Install icon
-# Remove old SVG if present to ensure new PNG is used
-if [ -f "/usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg" ]; then
-    sudo rm -f "/usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg"
-fi
-
-if [ -f "$BUILD_DIR/data/gui/icon.png" ]; then
-    echo "Installing icon..."
-    # Install to both pixmaps (legacy/fallback) and hicolor (modern standard)
-    sudo install -Dm644 "$BUILD_DIR/data/gui/icon.png" /usr/share/pixmaps/com.github.encomjp.razercontrol.png
-    sudo mkdir -p /usr/share/icons/hicolor/512x512/apps
-    sudo install -Dm644 "$BUILD_DIR/data/gui/icon.png" /usr/share/icons/hicolor/512x512/apps/com.github.encomjp.razercontrol.png
-elif [ -f "$BUILD_DIR/data/gui/com.github.encomjp.razercontrol.svg" ]; then
-    echo "Installing SVG icon..."
-    sudo install -Dm644 "$BUILD_DIR/data/gui/com.github.encomjp.razercontrol.svg" /usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg
-fi
+echo "Installing SVG icon..."
+sudo mkdir -p /usr/share/icons/hicolor/scalable/apps/
+sudo install -Dm644 "$BUILD_DIR/data/gui/com.github.encomjp.razercontrol.svg" /usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg
 
 # Install udev rules
 echo "Installing udev rules..."
@@ -89,17 +76,7 @@ PLASMOID_DIR="$HOME/.local/share/plasma/plasmoids/com.github.encomjp.razercontro
 if [ -d "$PLASMOID_DIR" ]; then
     echo "Updating KDE Plasmoid..."
     cp -r "$BUILD_DIR/kde-widget/package/"* "$PLASMOID_DIR/" 2>/dev/null || true
-    # We don't restart plasmashell because it kills the desktop session often.
-    # kbuildsycoca should be enough for QML reload on next load/restart.
 fi
 
 echo ""
 echo "Installation complete!"
-echo ""
-echo "You can now:"
-echo "  - Search for 'Razer Settings' in your application menu"
-echo "  - Run 'razer-settings' from the terminal"
-echo "  - Run 'razer-cli' for CLI access"
-echo ""
-echo "The daemon is running as a systemd user service."
-echo "To check status: systemctl --user status razercontrol"
