@@ -406,7 +406,7 @@ PlasmoidItem {
                             Item { Layout.fillWidth: true }
                             QQC2.Label {
                                 text: { switch(powerProfile) { case "0": return "Balanced"; case "1": return "Gaming"; case "2": return "Creator"; case "3": return "Silent"; case "4": return "Custom"; default: return "--"; } }
-                                font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize; color: "Kirigami.Theme.positiveTextColor"
+                                font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize; color: Kirigami.Theme.positiveTextColor
                             }
                             Kirigami.Icon { source: "go-next-symbolic"; Layout.preferredWidth: 12; Layout.preferredHeight: 12; opacity: 0.4 }
                         }
