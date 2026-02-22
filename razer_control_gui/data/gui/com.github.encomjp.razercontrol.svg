@@ -1,31 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="razerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#44d62c" />
-      <stop offset="100%" stop-color="#1b5e20" />
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="15" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
-  <!-- Background Drop -->
-  <circle cx="256" cy="256" r="240" fill="#111111" stroke="url(#razerGrad)" stroke-width="12" />
-  
-  <!-- Central Hub - Modernized Triskelion Inspired -->
-  <g transform="translate(256, 256) scale(0.8) translate(-256, -256)" filter="url(#glow)">
-    <!-- Top left snake -->
-    <path d="M 220 120 C 140 100, 100 180, 160 220 C 180 230, 200 240, 210 250 C 220 230, 230 200, 220 180 C 210 160, 220 140, 220 120 Z" fill="url(#razerGrad)" />
-    <!-- Top right snake -->
-    <path d="M 292 120 C 372 100, 412 180, 352 220 C 332 230, 312 240, 302 250 C 292 230, 282 200, 292 180 C 302 160, 292 140, 292 120 Z" fill="url(#razerGrad)" />
-    <!-- Bottom snake -->
-    <path d="M 256 360 C 256 420, 200 450, 180 390 C 170 360, 200 320, 230 300 C 240 320, 256 340, 256 360 Z" fill="url(#razerGrad)" />
-    <!-- Bottom snake right -->
-    <path d="M 256 360 C 256 420, 312 450, 332 390 C 342 360, 312 320, 282 300 C 272 320, 256 340, 256 360 Z" fill="url(#razerGrad)" />
-    <!-- Center joining element -->
-    <circle cx="256" cy="265" r="25" fill="#44d62c" />
-    <circle cx="256" cy="265" r="12" fill="#111111" />
-  </g>
-  <!-- Control / UI ring -->
-  <circle cx="256" cy="256" r="180" fill="none" stroke="#44d62c" stroke-width="4" stroke-dasharray="10, 30" opacity="0.6" />
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Matte Black Chassis Finish -->
+        <radialGradient id="matteFinish" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" style="stop-color:#1a1a1a" />
+            <stop offset="100%" style="stop-color:#050505" />
+        </radialGradient>
+
+        <!-- Neon Logo Glow -->
+        <filter id="logoGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feFlood flood-color="#44ff00" flood-opacity="1" result="color" />
+            <feComposite in="color" in2="blur" operator="in" result="glow" />
+            <feMerge>
+                <feMergeNode in="glow" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+
+        <!-- Metal Bezel -->
+        <linearGradient id="bezelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#333" />
+            <stop offset="100%" style="stop-color:#111" />
+        </linearGradient>
+    </defs>
+
+    <!-- Circular Outer Shell -->
+    <circle cx="256" cy="256" r="240" fill="url(#bezelGradient)" />
+    <circle cx="256" cy="256" r="232" fill="url(#matteFinish)" />
+
+    <!-- Stylized Laptop Lid Silhouette -->
+    <g transform="translate(106, 146)">
+        <!-- Main Lid Body -->
+        <rect width="300" height="220" rx="12" fill="#0d0d0d" stroke="#222" stroke-width="2" />
+        
+        <!-- Bottom Hinge/Lip line -->
+        <path d="M0 210 L300 210" stroke="#000" stroke-width="4" />
+        
+        <!-- Stylized Triple Snake Logo (Abstracted) -->
+        <g filter="url(#logoGlow)" transform="translate(150, 105)">
+            <!-- Central Body -->
+            <circle r="12" fill="#44ff00" />
+            
+            <!-- Snake Head 1 (Top) -->
+            <path d="M0 -10 L0 -45 Q0 -55 10 -55" fill="none" stroke="#44ff00" stroke-width="6" stroke-linecap="round" />
+            
+            <!-- Snake Head 2 (Left) -->
+            <path d="M-8 4 L-35 25 Q-45 35 -35 45" fill="none" stroke="#44ff00" stroke-width="6" stroke-linecap="round" />
+            
+            <!-- Snake Head 3 (Right) -->
+            <path d="M8 4 L35 25 Q45 35 35 45" fill="none" stroke="#44ff00" stroke-width="6" stroke-linecap="round" />
+            
+            <!-- Decorative Central Core -->
+            <circle r="4" fill="#000" />
+        </g>
+        
+        <!-- Lid Detail Lines -->
+        <line x1="20" y1="20" x2="40" y2="20" stroke="#44ff00" stroke-width="1" opacity="0.3" />
+        <line x1="260" y1="20" x2="280" y2="20" stroke="#44ff00" stroke-width="1" opacity="0.3" />
+    </g>
+
+    <!-- Decorative Dashboard Ring -->
+    <path d="M256 50 A206 206 0 0 1 462 256" fill="none" stroke="#44ff00" stroke-width="2" stroke-dasharray="2 10" opacity="0.4" />
+    <path d="M256 462 A206 206 0 0 1 50 256" fill="none" stroke="#44ff00" stroke-width="2" stroke-dasharray="2 10" opacity="0.4" />
 </svg>
