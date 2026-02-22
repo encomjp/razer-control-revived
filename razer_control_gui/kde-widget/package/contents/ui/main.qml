@@ -66,12 +66,12 @@ PlasmoidItem {
 
         RowLayout {
             id: compactRow
-            anchors.centerIn: parent
+            anchors.fill: parent
             spacing: Kirigami.Units.largeSpacing
             Kirigami.Icon {
                 source: "com.github.encomjp.razercontrol"
-                Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
             QQC2.Label {
                 text: cpuTemp !== "--" ? cpuTemp + "\u00B0" : ""
@@ -124,8 +124,8 @@ PlasmoidItem {
 
                     Kirigami.Icon {
                         source: "com.github.encomjp.razercontrol"
-                        Layout.preferredWidth: Kirigami.Units.iconSizes.medium
-                        Layout.preferredHeight: Kirigami.Units.iconSizes.medium
+                        Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                        Layout.preferredHeight: Kirigami.Units.iconSizes.large
                     }
                     Kirigami.Heading { text: "Razer Control"; level: 3; font.weight: Font.DemiBold }
                     Item { Layout.fillWidth: true }
@@ -172,7 +172,7 @@ PlasmoidItem {
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight
-                            color: cpuTemp !== "--" ? (parseFloat(cpuTemp) > 90 ? "Kirigami.Theme.negativeTextColor" : parseFloat(cpuTemp) > 75 ? "Kirigami.Theme.neutralTextColor" : "Kirigami.Theme.positiveTextColor") : Kirigami.Theme.textColor
+                            color: cpuTemp !== "--" ? (parseFloat(cpuTemp) > 90 ? Kirigami.Theme.negativeTextColor : parseFloat(cpuTemp) > 75 ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor) : Kirigami.Theme.textColor
                         }
                         QQC2.Label { 
                             text: cpuFreq !== "--" ? cpuFreq + " GHz" : ""; 
@@ -222,7 +222,7 @@ PlasmoidItem {
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight
-                            color: igpuTemp !== "--" ? (parseFloat(igpuTemp) > 90 ? "Kirigami.Theme.negativeTextColor" : parseFloat(igpuTemp) > 75 ? "Kirigami.Theme.neutralTextColor" : "Kirigami.Theme.positiveTextColor") : Kirigami.Theme.textColor
+                            color: igpuTemp !== "--" ? (parseFloat(igpuTemp) > 90 ? Kirigami.Theme.negativeTextColor : parseFloat(igpuTemp) > 75 ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor) : Kirigami.Theme.textColor
                         }
                         QQC2.Label { 
                             text: igpuFreq !== "--" ? igpuFreq + " MHz" : ""; 
@@ -277,7 +277,7 @@ PlasmoidItem {
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
                             Layout.preferredWidth: 48; 
                             horizontalAlignment: Text.AlignRight
-                            color: dgpuTemp !== "--" ? (parseFloat(dgpuTemp) > 85 ? "Kirigami.Theme.negativeTextColor" : parseFloat(dgpuTemp) > 70 ? "Kirigami.Theme.neutralTextColor" : "Kirigami.Theme.positiveTextColor") : Kirigami.Theme.disabledTextColor
+                            color: dgpuTemp !== "--" ? (parseFloat(dgpuTemp) > 85 ? Kirigami.Theme.negativeTextColor : parseFloat(dgpuTemp) > 70 ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor) : Kirigami.Theme.disabledTextColor
                         }
                         QQC2.Label { 
                             text: dgpuFreq !== "--" ? dgpuFreq + " MHz" : ""; 
@@ -348,7 +348,7 @@ PlasmoidItem {
                             text: batteryStatus === "Charging" ? "+" + batteryWatts + " W" : "−" + batteryWatts + " W"
                             font.bold: true
                             font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
-                            color: batteryStatus === "Charging" ? "Kirigami.Theme.positiveTextColor" : "Kirigami.Theme.neutralTextColor"
+                            color: batteryStatus === "Charging" ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
                         }
                         QQC2.Label { 
                             text: batteryPct + "%"; 
@@ -516,7 +516,7 @@ PlasmoidItem {
                             QQC2.Label {
                                 text: { switch(logoMode) { case "0": return "Off"; case "1": return "On"; case "2": return "Breathing"; default: return "--"; } }
                                 font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-                                color: logoMode === "0" ? Kirigami.Theme.disabledTextColor : "Kirigami.Theme.positiveTextColor"
+                                color: logoMode === "0" ? Kirigami.Theme.disabledTextColor : Kirigami.Theme.positiveTextColor
                             }
                             Kirigami.Icon { source: "go-next-symbolic"; Layout.preferredWidth: 12; Layout.preferredHeight: 12; opacity: 0.4 }
                         }
@@ -557,7 +557,7 @@ PlasmoidItem {
                             QQC2.Label {
                                 text: bhoStatus.indexOf("On") >= 0 ? "On" : "Off"
                                 font.bold: true; font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-                                color: bhoStatus.indexOf("On") >= 0 ? "Kirigami.Theme.positiveTextColor" : Kirigami.Theme.disabledTextColor
+                                color: bhoStatus.indexOf("On") >= 0 ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
                             }
                             Kirigami.Icon { source: "go-next-symbolic"; Layout.preferredWidth: 12; Layout.preferredHeight: 12; opacity: 0.4 }
                         }
