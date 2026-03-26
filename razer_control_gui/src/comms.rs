@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::fs::PermissionsExt;
+use libc::umask;
 
 /// Razer laptop control socket path
 pub const SOCKET_PATH: &str = "/tmp/razercontrol-socket";
@@ -96,20 +97,30 @@ pub fn try_bind() -> std::io::Result<UnixStream> {
 
 #[allow(dead_code)]
 pub fn create() -> Option<UnixListener> {
-    if let Ok(_) = std::fs::metadata(SOCKET_PATH) {
-        eprintln!("UNIX Socket already exists. Is another daemon running?");
-        return None;
-    }
-    if let Ok(listener) = UnixListener::bind(SOCKET_PATH) {
-        // Restrict socket to owner only (srw-------)
-        let perms = std::fs::Permissions::from_mode(0o600);
-        if std::fs::set_permissions(SOCKET_PATH, perms).is_err() {
-            eprintln!("Could not set socket permissions");
+    if std::fs::metadata(SOCKET_PATH).is_ok() {
+        // Socket file exists — check if a daemon is actually listening
+        if UnixStream::connect(SOCKET_PATH).is_ok() {
+            eprintln!("UNIX Socket already exists and a daemon is responding. Is another daemon running?");
             return None;
         }
-        return Some(listener);
+        // Stale socket from a previous crash — remove it
+        eprintln!("Removing stale socket file");
+        if std::fs::remove_file(SOCKET_PATH).is_err() {
+            eprintln!("Could not remove stale socket file");
+            return None;
+        }
     }
-    return None;
+    // Set restrictive umask before bind so the socket is never world-accessible
+    let old_umask = unsafe { umask(0o077) };
+    let result = UnixListener::bind(SOCKET_PATH);
+    unsafe { umask(old_umask) };
+    match result {
+        Ok(listener) => Some(listener),
+        Err(e) => {
+            eprintln!("Failed to bind socket: {}", e);
+            None
+        }
+    }
 }
 
 #[allow(dead_code)]

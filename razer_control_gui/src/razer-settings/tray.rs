@@ -154,7 +154,7 @@ impl ksni::Tray for RazerTray {
     }
 
     fn icon_name(&self) -> String {
-        "razer-control".into()
+        "com.github.encomjp.razercontrol".into()
     }
 
     fn tool_tip(&self) -> ksni::ToolTip {

@@ -54,7 +54,7 @@ PlasmoidItem {
     property var fanPresets: [0, 3000, 3500, 4000, 4500, 5000]
 
     // --- Update checker ---
-    readonly property string currentVersion: "0.2.8"
+    readonly property string currentVersion: "0.2.9"
     property string latestVersion: ""
     property string latestUrl: ""
     property bool updateDismissed: false

@@ -42,6 +42,7 @@ install() {
             # files on the system
             cp data/gui/razer-settings.desktop /usr/share/applications/
         fi
+        install -Dm644 data/gui/com.github.encomjp.razercontrol.svg /usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg
         cp target/release/daemon /usr/bin/razer-daemon
         cp data/devices/laptops.json /usr/share/razercontrol/
         cp data/udev/99-hidraw-permissions.rules /etc/udev/rules.d/
