@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  APP_VERSION: "0.2.9"
+  APP_VERSION: "0.3.0-rc1"
 
 jobs:
   build-appimage:
@@ -61,7 +61,7 @@ jobs:
           convert razer_control_gui/data/gui/icon.png -resize 256x256 /tmp/icon-256.png
 
           cp razer_control_gui/target/release/razer-settings $APPDIR/usr/bin/
-          cp razer_control_gui/data/gui/razer-settings.desktop $APPDIR/usr/share/applications/
+          cp razer_control_gui/data/gui/com.encomjp.razer-settings.desktop $APPDIR/usr/share/applications/
           cp razer_control_gui/data/devices/laptops.json $APPDIR/usr/share/razercontrol/
           cp /tmp/icon-256.png $APPDIR/usr/share/icons/hicolor/256x256/apps/com.github.encomjp.razercontrol.png
 
@@ -69,7 +69,7 @@ jobs:
           ./linuxdeploy-x86_64.AppImage \
             --appimage-extract-and-run \
             --appdir $APPDIR \
-            --desktop-file razer_control_gui/data/gui/razer-settings.desktop \
+            --desktop-file razer_control_gui/data/gui/com.encomjp.razer-settings.desktop \
             --icon-file /tmp/icon-256.png \
             --output appimage
 
@@ -173,7 +173,7 @@ jobs:
           cp razer_control_gui/target/release/razer-cli $PKG/usr/bin/
           cp razer_control_gui/target/release/daemon $PKG/usr/bin/razer-daemon
           cp razer_control_gui/data/devices/laptops.json $PKG/usr/share/razercontrol/
-          cp razer_control_gui/data/gui/razer-settings.desktop $PKG/usr/share/applications/
+          cp razer_control_gui/data/gui/com.encomjp.razer-settings.desktop $PKG/usr/share/applications/
           cp razer_control_gui/data/gui/icon.png $PKG/usr/share/icons/hicolor/256x256/apps/com.github.encomjp.razercontrol.png
           cp razer_control_gui/data/udev/99-hidraw-permissions.rules $PKG/etc/udev/rules.d/
           cp razer_control_gui/data/services/systemd/razercontrol.service $PKG/usr/lib/systemd/user/
@@ -280,11 +280,14 @@ jobs:
           cp razer_control_gui/target/release/razer-settings $DIST/bin/
           cp razer_control_gui/target/release/razer-cli $DIST/bin/
           cp razer_control_gui/target/release/daemon $DIST/bin/
-          cp razer_control_gui/data/gui/razer-settings.desktop $DIST/share/applications/
+          cp razer_control_gui/data/gui/com.encomjp.razer-settings.desktop $DIST/share/applications/
           cp razer_control_gui/data/devices/laptops.json $DIST/share/razercontrol/
           cp razer_control_gui/data/services/systemd/razercontrol.service $DIST/systemd/
           cp razer_control_gui/data/udev/99-hidraw-permissions.rules $DIST/udev/
           cp release/razer-control-0.2.0-x86_64/install.sh $DIST/install.sh
+          # Update version in copied install script
+          sed -i "s/0\.2\.0/${APP_VERSION}/g" $DIST/install.sh
+          chmod +x $DIST/install.sh
           cp LICENSE $DIST/
           cp README.md $DIST/
           tar -czvf "${DIST}.tar.gz" "$DIST"

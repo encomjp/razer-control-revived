@@ -23,7 +23,7 @@
 
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = name;
-          version = "0.2.9";
+          version = "0.3.0-rc1";
 
           nativeBuildInputs = with pkgs; [
             pkg-config
@@ -51,7 +51,7 @@
             mkdir -p $out/share/applications
             mv $out/bin/daemon $out/libexec
             cp ${./razer_control_gui/data/udev/99-hidraw-permissions.rules} $out/lib/udev/rules.d/99-hidraw-permissions.rules
-            cp ${./razer_control_gui/data/gui/razer-settings.desktop} $out/share/applications/razer-settings.desktop
+            cp ${./razer_control_gui/data/gui/com.encomjp.razer-settings.desktop} $out/share/applications/com.encomjp.razer-settings.desktop
           '';
 
           cargoLock = {

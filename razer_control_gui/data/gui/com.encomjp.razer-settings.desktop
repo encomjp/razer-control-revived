@@ -6,3 +6,5 @@ Icon=com.github.encomjp.razercontrol
 Terminal=false
 Type=Application
 Categories=Settings;HardwareSettings;System;
+StartupNotify=true
+StartupWMClass=com.encomjp.razer-settings

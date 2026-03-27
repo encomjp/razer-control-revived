@@ -147,7 +147,7 @@ services.razer-laptop-control.enable = true;
 
 ```bash
 # Clone the repository
-git clone https://github.com/encomjp/razercontrol-revived.git
+git clone https://github.com/encomjp/razercontrol-revived
 cd razercontrol-revived/razer_control_gui
 
 # Build and install (will prompt for sudo)

@@ -40,7 +40,7 @@ install() {
         if ls /usr/share/applications/*.desktop 1> /dev/null 2>&1; then
             # We only install the desktop file if there are already desktop
             # files on the system
-            cp data/gui/razer-settings.desktop /usr/share/applications/
+            cp data/gui/com.encomjp.razer-settings.desktop /usr/share/applications/
         fi
         install -Dm644 data/gui/com.github.encomjp.razercontrol.svg /usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg
         cp target/release/daemon /usr/bin/razer-daemon
@@ -83,7 +83,7 @@ uninstall() {
     sudo bash <<EOF
         rm -f /usr/bin/razer-cli
         rm -f /usr/bin/razer-settings
-        rm -f /usr/share/applications/razer-settings.desktop
+        rm -f /usr/share/applications/com.encomjp.razer-settings.desktop
         rm -f /usr/bin/razer-daemon
         rm -f /usr/share/razercontrol/laptops.json
         rm -f /etc/udev/rules.d/99-hidraw-permissions.rules

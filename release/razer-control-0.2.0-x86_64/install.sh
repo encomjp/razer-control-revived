@@ -33,7 +33,7 @@ sudo install -D -m 755 "$SCRIPT_DIR/bin/daemon" /usr/bin/razer-daemon
 
 # Install data files
 print_info "Installing data files..."
-sudo install -D -m 644 "$SCRIPT_DIR/share/applications/razer-settings.desktop" /usr/share/applications/razer-settings.desktop
+sudo install -D -m 644 "$SCRIPT_DIR/share/applications/com.encomjp.razer-settings.desktop" /usr/share/applications/com.encomjp.razer-settings.desktop
 sudo install -D -m 644 "$SCRIPT_DIR/share/razercontrol/laptops.json" /usr/share/razercontrol/laptops.json
 
 # Install systemd user service

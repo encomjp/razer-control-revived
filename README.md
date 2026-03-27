@@ -79,7 +79,7 @@ Fan curves · Power profiles · CPU/GPU boost · Battery health · RGB effects �
 
 ```bash
 # Download the .deb from the releases page, then:
-sudo apt install ./razercontrol-revived_0.2.9_amd64.deb
+sudo apt install ./razercontrol-revived_0.3.0-rc1_amd64.deb
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
@@ -89,7 +89,7 @@ Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop 
 
 ```bash
 # Download the .rpm from the releases page, then:
-sudo dnf install ./razercontrol-0.2.9-1.fc41.x86_64.rpm
+sudo dnf install ./razercontrol-0.3.0-rc1-1.fc41.x86_64.rpm
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
@@ -101,13 +101,13 @@ The AppImage is a portable GUI. You still need the daemon installed:
 
 ```bash
 # 1. Install daemon from tarball
-tar -xzf razer-control-0.2.9-x86_64.tar.gz
-cd razer-control-0.2.9-x86_64
+tar -xzf razer-control-0.3.0-rc1-x86_64.tar.gz
+cd razer-control-0.3.0-rc1-x86_64
 sudo ./install.sh
 
 # 2. Run the AppImage
-chmod +x RazerControl-0.2.9-x86_64.AppImage
-./RazerControl-0.2.9-x86_64.AppImage
+chmod +x RazerControl-0.3.0-rc1-x86_64.AppImage
+./RazerControl-0.3.0-rc1-x86_64.AppImage
 ```
 </details>
 
@@ -136,7 +136,7 @@ services.razer-laptop-control.enable = true;
 sudo pacman -S rust cargo dbus libusb hidapi pkgconf systemd gtk4 libadwaita git
 
 # Clone and install
-git clone https://github.com/encomjp/razercontrol-revived.git
+git clone https://github.com/encomjp/razercontrol-revived
 cd razercontrol-revived/razer_control_gui
 ./install.sh install
 ```

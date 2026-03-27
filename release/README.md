@@ -73,7 +73,7 @@ razer-control-0.2.0-x86_64/
 │   └── razer-settings  # GTK4 GUI application
 ├── share/
 │   ├── applications/
-│   │   └── razer-settings.desktop
+│   │   └── com.encomjp.razer-settings.desktop
 │   └── razercontrol/
 │       └── laptops.json
 ├── systemd/

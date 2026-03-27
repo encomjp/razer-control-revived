@@ -21,7 +21,7 @@ sudo install -Dm755 "$BUILD_DIR/target/release/razer-cli" /usr/bin/razer-cli
 
 # Install desktop file
 echo "Installing desktop entry..."
-sudo install -Dm644 "$BUILD_DIR/data/gui/razer-settings.desktop" /usr/share/applications/razer-settings.desktop
+sudo install -Dm644 "$BUILD_DIR/data/gui/com.encomjp.razer-settings.desktop" /usr/share/applications/com.encomjp.razer-settings.desktop
 
 echo "Installing SVG icon..."
 sudo mkdir -p /usr/share/icons/hicolor/scalable/apps/
