@@ -251,6 +251,11 @@ impl DeviceManager {
         }
     }
 
+    /// Check whether the current device declares a given feature.
+    pub fn device_has_feature(&self, feature: &str) -> bool {
+        self.device.as_ref().map_or(false, |d| d.features.contains(&feature.to_string()))
+    }
+
     pub fn restore_standard_effect(&mut self) {
         let mut effect = 0;
         let mut params: Vec<u8> = vec![];
@@ -712,7 +717,7 @@ impl DeviceManager {
 
 pub struct RazerLaptop {
     name: String,
-    features: Vec<String>,
+    pub(crate) features: Vec<String>,
     fan: Vec<u16>,
     device: hidapi::HidDevice,
     power: u8, // need for fan

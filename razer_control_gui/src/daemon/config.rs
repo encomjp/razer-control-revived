@@ -57,7 +57,7 @@ impl Configuration {
             power: [PowerConfig::new(), PowerConfig::new()],
             sync: false,
             no_light: 0.0,
-            standard_effect: 0, // off
+            standard_effect: 0x04, // spectrum cycling
             standard_effect_params: vec![],
             bho_on: false,
             bho_threshold: 80,

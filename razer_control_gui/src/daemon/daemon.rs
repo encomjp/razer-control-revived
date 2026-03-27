@@ -75,19 +75,25 @@ fn main() {
             d.set_ac_state(online);
             d.restore_standard_effect();
             d.restore_bho();
-            if let Ok(json) = config::Configuration::read_effects_file() {
-                if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
-                    mgr.load_from_save(json);
+            // Only load per-key RGB effects if device supports custom frames.
+            // Sending custom frame HID reports to unsupported devices can
+            // overwhelm the USB/HID subsystem and trigger kernel panics.
+            if d.device_has_feature("per_key_rgb") {
+                if let Ok(json) = config::Configuration::read_effects_file() {
+                    if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
+                        mgr.load_from_save(json);
+                    }
+                } else {
+                    println!("No effects save, creating a new one");
+                    if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
+                        mgr.push_effect(
+                            kbd::effects::Static::new(vec![0, 255, 0]),
+                            [true; 90]
+                        );
+                    }
                 }
             } else {
-                println!("No effects save, creating a new one");
-                // No effects found, start with a green static layer, just like synapse
-                if let Ok(mut mgr) = EFFECT_MANAGER.lock() {
-                    mgr.push_effect(
-                        kbd::effects::Static::new(vec![0, 255, 0]),
-                        [true; 90]
-                    );
-                }
+                println!("Device does not support per-key RGB, skipping keyboard effects");
             }
         } else {
             println!("error getting current power state");
@@ -95,7 +101,15 @@ fn main() {
         }
     }
 
-    start_keyboard_animator_task();
+    // Only run the keyboard animation loop if the device supports per-key RGB.
+    // Sending custom frame reports to unsupported devices causes kernel panics.
+    if let Ok(d) = DEV_MANAGER.lock() {
+        if d.device_has_feature("per_key_rgb") {
+            start_keyboard_animator_task();
+        } else {
+            println!("Keyboard animation disabled (device has no per_key_rgb)");
+        }
+    }
     start_screensaver_monitor_task();
     start_battery_monitor_task();
     let clean_thread = start_shutdown_task();
@@ -420,29 +434,43 @@ pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::Daemon
                 if gui_idx < 255 {
                     d.save_gui_effect(gui_idx, params.clone());
                 }
-                if let Ok(mut k) = EFFECT_MANAGER.lock() {
-                    res = true;
-                    let effect = match name.as_str() {
-                        "static" => Some(kbd::effects::Static::new(params)),
-                        "static_gradient" => Some(kbd::effects::StaticGradient::new(params)),
-                        "wave_gradient" => Some(kbd::effects::WaveGradient::new(params)),
-                        "breathing_single" => Some(kbd::effects::BreathSingle::new(params)),
-                        _ => None
-                    };
 
-                    if let Some(laptop) = d.get_device() {
-                        if let Some(e) = effect {
-                            k.pop_effect(laptop); // Remove old layer
-                            k.push_effect(
-                                e,
-                                [true; 90]
-                                );
+                if d.device_has_feature("per_key_rgb") {
+                    // Per-key RGB: push to EFFECT_MANAGER for animation loop
+                    if let Ok(mut k) = EFFECT_MANAGER.lock() {
+                        res = true;
+                        let effect = match name.as_str() {
+                            "static" => Some(kbd::effects::Static::new(params)),
+                            "static_gradient" => Some(kbd::effects::StaticGradient::new(params)),
+                            "wave_gradient" => Some(kbd::effects::WaveGradient::new(params)),
+                            "breathing_single" => Some(kbd::effects::BreathSingle::new(params)),
+                            _ => None
+                        };
+
+                        if let Some(laptop) = d.get_device() {
+                            if let Some(e) = effect {
+                                k.pop_effect(laptop); // Remove old layer
+                                k.push_effect(
+                                    e,
+                                    [true; 90]
+                                    );
+                            } else {
+                                res = false
+                            }
                         } else {
-                            res = false
+                            res = false;
                         }
-                    } else {
-                        res = false;
                     }
+                } else {
+                    // No per-key RGB: map GUI effects to standard hardware effects
+                    let (effect_id, hw_params) = match name.as_str() {
+                        "static" => (device::RazerLaptop::STATIC, params),
+                        "breathing_single" => (device::RazerLaptop::BREATHING, params),
+                        "wave_gradient" => (device::RazerLaptop::WAVE, params),
+                        "static_gradient" => (device::RazerLaptop::STATIC, params),
+                        _ => (device::RazerLaptop::SPECTRUM, vec![]),
+                    };
+                    res = d.set_standard_effect(effect_id, hw_params);
                 }
                 Some(comms::DaemonResponse::SetEffect{result: res})
             }
