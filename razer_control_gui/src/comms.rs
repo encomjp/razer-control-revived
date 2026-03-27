@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::net::Shutdown;
 use std::os::unix::net::{UnixListener, UnixStream};
-use std::os::unix::fs::PermissionsExt;
 use libc::umask;
 
 /// Razer laptop control socket path
