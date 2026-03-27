@@ -2,7 +2,7 @@ cargo-features = ["edition2024"]
 
 [package]
 name = "service"
-version = "0.3.0-rc1"
+version = "0.3.0-rc3"
 authors = ["Adrian Kozowski <kontakt@adrian-kozlowski.de>"]
 edition = "2024"
 

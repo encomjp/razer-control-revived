@@ -66,9 +66,7 @@ Fan curves · Power profiles · CPU/GPU boost · Battery health · RGB effects �
 &nbsp;&nbsp;
 <a href="https://github.com/encomjp/razer-control-revived/releases/latest"><img src="https://img.shields.io/badge/🔵_Fedora_/_RHEL-.rpm_Package-51A2DA?style=for-the-badge&logoColor=white" alt="Download .rpm" height="48" /></a>
 &nbsp;&nbsp;
-<a href="https://github.com/encomjp/razer-control-revived/releases/latest"><img src="https://img.shields.io/badge/🟢_Any_Distro-.AppImage-4CAF50?style=for-the-badge&logoColor=white" alt="Download AppImage" height="48" /></a>
-&nbsp;&nbsp;
-<a href="https://github.com/encomjp/razer-control-revived/releases/latest"><img src="https://img.shields.io/badge/📦_Manual-Tarball-888888?style=for-the-badge&logoColor=white" alt="Download Tarball" height="48" /></a>
+<a href="https://github.com/encomjp/razer-control-revived/releases/latest"><img src="https://img.shields.io/badge/�_Any_Distro-Tarball-888888?style=for-the-badge&logoColor=white" alt="Download Tarball" height="48" /></a>
 
 <br><br>
 
@@ -79,7 +77,7 @@ Fan curves · Power profiles · CPU/GPU boost · Battery health · RGB effects �
 
 ```bash
 # Download the .deb from the releases page, then:
-sudo apt install ./razercontrol-revived_0.3.0-rc1_amd64.deb
+sudo apt install ./razercontrol-revived_0.3.0-rc3_amd64.deb
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
@@ -89,26 +87,21 @@ Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop 
 
 ```bash
 # Download the .rpm from the releases page, then:
-sudo dnf install ./razercontrol-0.3.0-rc1-1.fc41.x86_64.rpm
+sudo dnf install ./razercontrol-0.3.0-rc3-1.fc41.x86_64.rpm
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
 
 <details>
-<summary><h3>🟢 AppImage (Any Distribution)</h3></summary>
-
-The AppImage is a portable GUI. You still need the daemon installed:
+<summary><h3>� Tarball (Any Distribution)</h3></summary>
 
 ```bash
-# 1. Install daemon from tarball
-tar -xzf razer-control-0.3.0-rc1-x86_64.tar.gz
-cd razer-control-0.3.0-rc1-x86_64
+# Download the tarball from the releases page, then:
+tar -xzf razer-control-0.3.0-rc3-x86_64.tar.gz
+cd razer-control-0.3.0-rc3-x86_64
 sudo ./install.sh
-
-# 2. Run the AppImage
-chmod +x RazerControl-0.3.0-rc1-x86_64.AppImage
-./RazerControl-0.3.0-rc1-x86_64.AppImage
 ```
+Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
 
 <details>

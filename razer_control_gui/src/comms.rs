@@ -4,8 +4,16 @@ use std::net::Shutdown;
 use std::os::unix::net::{UnixListener, UnixStream};
 use libc::umask;
 
-/// Razer laptop control socket path
-pub const SOCKET_PATH: &str = "/tmp/razercontrol-socket";
+/// Razer laptop control socket path.
+/// Prefer XDG_RUNTIME_DIR (/run/user/<uid>) which persists for the session.
+/// Fall back to /tmp for AppImage or environments without XDG_RUNTIME_DIR.
+pub fn socket_path() -> String {
+    if let Ok(dir) = std::env::var("XDG_RUNTIME_DIR") {
+        format!("{}/razercontrol-socket", dir)
+    } else {
+        "/tmp/razercontrol-socket".to_string()
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GpuInfo {
@@ -82,7 +90,7 @@ pub enum DaemonResponse {
 
 #[allow(dead_code)]
 pub fn bind() -> Option<UnixStream> {
-    if let Ok(socket) = UnixStream::connect(SOCKET_PATH) {
+    if let Ok(socket) = UnixStream::connect(socket_path()) {
         return Some(socket);
     } else {
         return None;
@@ -92,27 +100,28 @@ pub fn bind() -> Option<UnixStream> {
 #[allow(dead_code)]
 /// We use this from the app, but it should replace bind
 pub fn try_bind() -> std::io::Result<UnixStream> {
-    UnixStream::connect(SOCKET_PATH)
+    UnixStream::connect(socket_path())
 }
 
 #[allow(dead_code)]
 pub fn create() -> Option<UnixListener> {
-    if std::fs::metadata(SOCKET_PATH).is_ok() {
+    let path = socket_path();
+    if std::fs::metadata(&path).is_ok() {
         // Socket file exists — check if a daemon is actually listening
-        if UnixStream::connect(SOCKET_PATH).is_ok() {
+        if UnixStream::connect(&path).is_ok() {
             eprintln!("UNIX Socket already exists and a daemon is responding. Is another daemon running?");
             return None;
         }
         // Stale socket from a previous crash — remove it
         eprintln!("Removing stale socket file");
-        if std::fs::remove_file(SOCKET_PATH).is_err() {
+        if std::fs::remove_file(&path).is_err() {
             eprintln!("Could not remove stale socket file");
             return None;
         }
     }
     // Set permissive umask so non-root GUI/CLI can connect to the daemon socket
     let old_umask = unsafe { umask(0o000) };
-    let result = UnixListener::bind(SOCKET_PATH);
+    let result = UnixListener::bind(&path);
     unsafe { umask(old_umask) };
     match result {
         Ok(listener) => Some(listener),

@@ -298,7 +298,7 @@ struct BreathingSingleParams {
 }
 
 fn main() {
-    if std::fs::metadata(comms::SOCKET_PATH).is_err() {
+    if std::fs::metadata(comms::socket_path()).is_err() {
         eprintln!("Error. Socket doesn't exit. Is daemon running?");
         std::process::exit(1);
     }

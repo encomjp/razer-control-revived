@@ -49,7 +49,7 @@ cd razer_control_gui/kde-widget && ./install-plasmoid.sh
 
 **No automated test suite** — testing is manual per [razer_control_gui/TESTING_CHECKLIST.md](razer_control_gui/TESTING_CHECKLIST.md). `cargo build --release` in CI is the primary validation.
 
-**Packaging:** RPM ([packaging/fedora/razercontrol.spec](packaging/fedora/razercontrol.spec)), DEB, AppImage — all built in GitHub Actions on tag push (`v*`).
+**Packaging:** RPM ([packaging/fedora/razercontrol.spec](packaging/fedora/razercontrol.spec)), DEB, tar.gz — all built in GitHub Actions on tag push (`v*`).
 
 **Nix:** `flake.nix` provides a NixOS module with systemd + udev integration.
 
