@@ -69,14 +69,17 @@ install -D -m 644 razer_control_gui/data/services/systemd/razercontrol.service $
 udevadm control --reload-rules || :
 udevadm trigger --subsystem-match=hidraw --action=change || :
 %systemd_user_post razercontrol.service
-# Enable for all users and start for the installing user
+# Enable for all users so daemon starts on login
 systemctl --global enable razercontrol.service 2>/dev/null || :
+# Start immediately for the installing user
 if [ -n "$SUDO_USER" ]; then
-    runuser -l "$SUDO_USER" -- systemctl --user daemon-reload 2>/dev/null || :
-    runuser -l "$SUDO_USER" -- systemctl --user start razercontrol.service 2>/dev/null || :
-elif [ -n "$USER" ] && [ "$USER" != "root" ]; then
-    systemctl --user daemon-reload 2>/dev/null || :
-    systemctl --user start razercontrol.service 2>/dev/null || :
+    _UID=$(id -u "$SUDO_USER" 2>/dev/null)
+    if [ -n "$_UID" ] && [ -d "/run/user/$_UID" ]; then
+        su -s /bin/sh "$SUDO_USER" -c \
+            "XDG_RUNTIME_DIR=/run/user/$_UID systemctl --user daemon-reload; \
+             XDG_RUNTIME_DIR=/run/user/$_UID systemctl --user start razercontrol.service" \
+            2>/dev/null || :
+    fi
 fi
 
 %preun
