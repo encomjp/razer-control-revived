@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
+use std::net::Shutdown;
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::fs::PermissionsExt;
 use libc::umask;
@@ -127,15 +128,18 @@ pub fn create() -> Option<UnixListener> {
 pub fn send_to_daemon(command: DaemonCommand, mut sock: UnixStream) -> Option<DaemonResponse> {
     if let Ok(encoded) = bincode::serialize(&command) {
         if sock.write_all(&encoded).is_ok() {
-            let mut buf = [0u8; 4096];
-            return match sock.read(&mut buf) {
-                Ok(readed) if readed > 0 => read_from_socked_resp(&buf[0..readed]),
+            // Signal request EOF to daemon so it can read the full command.
+            let _ = sock.shutdown(Shutdown::Write);
+
+            let mut response = Vec::new();
+            return match sock.read_to_end(&mut response) {
+                Ok(readed) if readed > 0 => read_from_socked_resp(&response),
                 Ok(_) => {
                     eprintln!("No response from daemon");
                     None
                 }
-                Err(_) => {
-                    eprintln!("Read failed!");
+                Err(error) => {
+                    eprintln!("Read failed: {error}");
                     None
                 }
             };

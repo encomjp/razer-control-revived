@@ -932,11 +932,17 @@ fn main() {
         let devices: Vec<SupportedDevice> = serde_json::from_str(&device_file)
             .expect("Failed to parse device file");
 
-        let device_name = get_device_name()
-            .expect("Failed to get device name");
+        let device_name = match get_device_name() {
+            Some(name) => name,
+            None => crash_with_msg("Failed to get device name from daemon. Please ensure razercontrol daemon is running."),
+        };
 
-        let device = devices.iter().find(|d| d.name == device_name)
-            .expect("Failed to get device info").clone();
+        let device = match devices.iter().find(|d| d.name == device_name) {
+            Some(device) => device.clone(),
+            None => crash_with_msg(format!(
+                "Device '{device_name}' is not present in the supported device list."
+            )),
+        };
 
         let window = adw::ApplicationWindow::builder()
             .application(app)
