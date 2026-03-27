@@ -309,8 +309,14 @@ pub fn start_shutdown_task() -> JoinHandle<()> {
 }
 
 fn handle_data(mut stream: UnixStream) {
-    let mut buffer = [0u8; 4096];
-    if stream.read(&mut buffer).is_err() {
+    let mut buffer = Vec::new();
+    if let Err(error) = stream.read_to_end(&mut buffer) {
+        eprintln!("Failed to read request from socket: {error}");
+        return;
+    }
+
+    if buffer.is_empty() {
+        eprintln!("Received empty request payload");
         return;
     }
 

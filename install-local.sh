@@ -13,11 +13,22 @@ fi
 
 echo "Installing razercontrol-revived..."
 
+RAZER_SETTINGS_BIN="$BUILD_DIR/target/release/razer-settings"
+RAZER_DAEMON_BIN="$BUILD_DIR/target/release/daemon"
+RAZER_CLI_BIN="$BUILD_DIR/target/release/razer-cli"
+
+if [ -f "$RAZER_SETTINGS_BIN" ] && [ -f "$RAZER_DAEMON_BIN" ] && [ -f "$RAZER_CLI_BIN" ]; then
+    echo "Release binaries found, skipping build."
+else
+    echo "Release binaries missing, building with cargo..."
+    cargo build --release --manifest-path "$BUILD_DIR/Cargo.toml"
+fi
+
 # Install binaries (consistent with deb/rpm package names)
 echo "Installing binaries to /usr/bin..."
-sudo install -Dm755 "$BUILD_DIR/target/release/razer-settings" /usr/bin/razer-settings
-sudo install -Dm755 "$BUILD_DIR/target/release/daemon" /usr/bin/razer-daemon
-sudo install -Dm755 "$BUILD_DIR/target/release/razer-cli" /usr/bin/razer-cli
+sudo install -Dm755 "$RAZER_SETTINGS_BIN" /usr/bin/razer-settings
+sudo install -Dm755 "$RAZER_DAEMON_BIN" /usr/bin/razer-daemon
+sudo install -Dm755 "$RAZER_CLI_BIN" /usr/bin/razer-cli
 
 # Install desktop file
 echo "Installing desktop entry..."
