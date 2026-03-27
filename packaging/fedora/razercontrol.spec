@@ -5,6 +5,9 @@ Summary:        Razer Laptop Control - Revived
 
 License:        GPLv2
 URL:            https://github.com/encomjp/razer-control-revived
+
+# Rust binaries are already stripped; skip debuginfo generation
+%global debug_package %{nil}
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  rust

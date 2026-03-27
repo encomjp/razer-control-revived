@@ -51,7 +51,7 @@ jobs:
       - name: Collect RPM
         run: |
           mkdir -p rpm-output
-          find ~/rpmbuild/RPMS -name "*.rpm" -exec cp {} rpm-output/ \;
+          find ~/rpmbuild/RPMS -name "*.rpm" ! -name "*-debuginfo-*" ! -name "*-debugsource-*" -exec cp {} rpm-output/ \;
 
       - name: Upload RPM
         uses: actions/upload-artifact@v4
