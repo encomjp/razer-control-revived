@@ -2,7 +2,11 @@
 
 use serde::{Serialize, Deserialize};
 
-pub const DEVICE_FILE: &str = "/usr/share/razercontrol/laptops.json";
+const DEVICE_FILE_DEFAULT: &str = "/usr/share/razercontrol/laptops.json";
+
+pub fn device_file_path() -> String {
+    std::env::var("RAZER_DEVICE_FILE").unwrap_or_else(|_| DEVICE_FILE_DEFAULT.to_string())
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SupportedDevice {

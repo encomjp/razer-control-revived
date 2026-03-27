@@ -941,7 +941,7 @@ fn main() {
             return;
         }
 
-        let device_file = std::fs::read_to_string(service::DEVICE_FILE).unwrap_or("[]".into());
+        let device_file = std::fs::read_to_string(service::device_file_path()).unwrap_or("[]".into());
         let devices: Vec<SupportedDevice> = match serde_json::from_str(&device_file) {
             Ok(d) => d,
             Err(e) => {

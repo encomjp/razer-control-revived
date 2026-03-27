@@ -61,6 +61,8 @@ jobs:
           convert razer_control_gui/data/gui/icon.png -resize 256x256 /tmp/icon-256.png
 
           cp razer_control_gui/target/release/razer-settings $APPDIR/usr/bin/
+          cp razer_control_gui/target/release/daemon $APPDIR/usr/bin/razer-daemon
+          cp razer_control_gui/target/release/razer-cli $APPDIR/usr/bin/
           cp razer_control_gui/data/gui/com.encomjp.razer-settings.desktop $APPDIR/usr/share/applications/
           cp razer_control_gui/data/devices/laptops.json $APPDIR/usr/share/razercontrol/
           cp /tmp/icon-256.png $APPDIR/usr/share/icons/hicolor/256x256/apps/com.github.encomjp.razercontrol.png
@@ -72,6 +74,16 @@ jobs:
             --desktop-file razer_control_gui/data/gui/com.encomjp.razer-settings.desktop \
             --icon-file /tmp/icon-256.png \
             --output appimage
+
+          # Replace auto-generated AppRun with custom one that handles FUSE mount permissions
+          GENERATED_APPIMAGE=$(ls RazerControl-*.AppImage)
+          ./"$GENERATED_APPIMAGE" --appimage-extract
+          cp packaging/appimage/AppRun squashfs-root/AppRun
+          chmod +x squashfs-root/AppRun
+          wget -q "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool-x86_64.AppImage
+          rm -f "$GENERATED_APPIMAGE"
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage --appimage-extract-and-run squashfs-root "$GENERATED_APPIMAGE"
 
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
