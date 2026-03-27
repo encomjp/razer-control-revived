@@ -323,7 +323,11 @@ fn handle_data(mut stream: UnixStream) {
                     println!("Client disconnected with error: {error}");
                 }
             }
+        } else {
+            eprintln!("No response for client request — closing connection");
         }
+    } else {
+        eprintln!("Failed to deserialize client request");
     }
 }
 

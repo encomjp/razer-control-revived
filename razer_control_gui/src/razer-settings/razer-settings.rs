@@ -2,7 +2,6 @@ use gtk4 as gtk;
 use libadwaita as adw;
 use gtk::prelude::*;
 use adw::prelude::*;
-use std::io::ErrorKind;
 use std::fs;
 use std::rc::Rc;
 use std::cell::Cell;
@@ -24,11 +23,8 @@ use util::*;
 fn send_data(opt: comms::DaemonCommand) -> Option<comms::DaemonResponse> {
     match comms::try_bind() {
         Ok(socket) => comms::send_to_daemon(opt, socket),
-        Err(error) if error.kind() == ErrorKind::NotFound => {
-            crash_with_msg("Can't connect to the daemon");
-        }
         Err(error) => {
-            println!("Error opening socket: {error}");
+            eprintln!("Can't connect to daemon: {}", error);
             None
         }
     }
@@ -82,6 +78,23 @@ fn get_device_name() -> Option<String> {
             None
         }
     }
+}
+
+/// Show an error dialog to the user without panicking.
+/// This is safe to call from GTK signal callbacks (no panic/unwind).
+fn show_error_dialog(app: &adw::Application, message: &str) {
+    let dialog = adw::MessageDialog::new(
+        app.active_window().as_ref(),
+        Some("Razer Control — Error"),
+        Some(message),
+    );
+    dialog.add_response("close", "Close");
+    dialog.set_default_response(Some("close"));
+    dialog.set_close_response("close");
+    dialog.connect_response(None, |dlg, _| {
+        dlg.close();
+    });
+    dialog.present();
 }
 
 fn get_bho() -> Option<(bool, u8)> {
@@ -929,14 +942,43 @@ fn main() {
         }
 
         let device_file = std::fs::read_to_string(service::DEVICE_FILE).unwrap_or("[]".into());
-        let devices: Vec<SupportedDevice> = serde_json::from_str(&device_file)
-            .expect("Failed to parse device file");
+        let devices: Vec<SupportedDevice> = match serde_json::from_str(&device_file) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("Failed to parse device file: {}", e);
+                show_error_dialog(app, &format!(
+                    "Failed to parse device file ({}).\n\nPlease ensure razercontrol is installed correctly.",
+                    e
+                ));
+                return;
+            }
+        };
 
-        let device_name = get_device_name()
-            .expect("Failed to get device name");
+        let device_name = match get_device_name() {
+            Some(name) => name,
+            None => {
+                eprintln!("Failed to get device name from daemon");
+                show_error_dialog(app, 
+                    "Failed to get device name.\n\n\
+                    The daemon may not be running or failed to respond.\n\
+                    Try: systemctl --user restart razercontrol"
+                );
+                return;
+            }
+        };
 
-        let device = devices.iter().find(|d| d.name == device_name)
-            .expect("Failed to get device info").clone();
+        let device = match devices.iter().find(|d| d.name == device_name) {
+            Some(d) => d.clone(),
+            None => {
+                eprintln!("Device '{}' not found in laptops.json", device_name);
+                show_error_dialog(app, &format!(
+                    "Device '{}' not found in supported devices list.\n\n\
+                    Your device may not be supported yet, or the device database is outdated.",
+                    device_name
+                ));
+                return;
+            }
+        };
 
         let window = adw::ApplicationWindow::builder()
             .application(app)

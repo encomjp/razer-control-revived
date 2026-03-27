@@ -85,6 +85,13 @@ pub struct DeviceManager {
 }
 
 impl DeviceManager {
+    /// Read the USB interface number for a /dev/hidrawX node from sysfs.
+    fn hidraw_iface_number(hidraw_name: &str) -> Option<i32> {
+        let iface_path = format!("/sys/class/hidraw/{}/device/../bInterfaceNumber", hidraw_name);
+        let raw = fs::read_to_string(iface_path).ok()?;
+        i32::from_str_radix(raw.trim(), 16).ok()
+    }
+
     fn read_hex_u16(path: &std::path::Path) -> Option<u16> {
         let raw = fs::read_to_string(path).ok()?;
         let trimmed = raw.trim();
@@ -586,9 +593,20 @@ impl DeviceManager {
         // Check if socket is OK
         match HidApi::new() {
             Ok(api) => {
-                // Primary path: interface 0 via hidapi (historical standard path).
+                // Primary path: interface 0 via hidapi.
+                // hidapi's linux-native (hidraw) backend returns -1 for
+                // interface_number(), so resolve the real USB interface
+                // number from sysfs when the value is unavailable.
                 for device in api.device_list().filter(|d| d.vendor_id() == RAZER_VENDOR_ID) {
-                    if device.interface_number() != 0 {
+                    let iface = if device.interface_number() >= 0 {
+                        device.interface_number()
+                    } else {
+                        // Derive interface from sysfs via the device path
+                        let path_str = device.path().to_str().unwrap_or_default();
+                        let hidraw_name = path_str.rsplit('/').next().unwrap_or("");
+                        Self::hidraw_iface_number(hidraw_name).unwrap_or(-1)
+                    };
+                    if iface != 0 {
                         continue;
                     }
 
@@ -616,6 +634,9 @@ impl DeviceManager {
                 }
 
                 // Fallback #1: direct /dev/hidrawX probing based on /sys VID/PID.
+                // Collect candidates and sort by USB interface number so we
+                // prefer interface 0 (the one that accepts feature reports).
+                let mut candidates: Vec<(String, u16, u16, i32)> = Vec::new();
                 if let Ok(entries) = fs::read_dir("/dev") {
                     for entry in entries.flatten() {
                         let name = match entry.file_name().into_string() {
@@ -630,44 +651,51 @@ impl DeviceManager {
                             continue;
                         };
 
-                        eprintln!("hidraw fallback candidate: /dev/{} vid={:04x} pid={:04x}", name, vid, pid);
                         if vid != RAZER_VENDOR_ID {
                             continue;
                         }
 
-                        if let Some(supported_device) = self.find_supported_device(vid, pid) {
-                            let path = format!("/dev/{}", name);
-                            let c_path = match CString::new(path.clone()) {
-                                Ok(p) => p,
-                                Err(_) => continue,
-                            };
-                            eprintln!(
-                                "Trying hidraw fallback open for {} ({:04x}:{:04x}) on {}",
-                                supported_device.name,
-                                vid,
-                                pid,
-                                path,
-                            );
-                            match api.open_path(c_path.as_c_str()) {
-                                Ok(dev) => {
-                                    self.device = Some(RazerLaptop::new(
-                                        supported_device.name.clone(),
-                                        supported_device.features.clone(),
-                                        supported_device.fan.clone(),
-                                        dev,
-                                    ));
-                                    return;
-                                }
-                                Err(e) => {
-                                    eprintln!(
-                                        "hidraw fallback open failed for {} ({:04x}:{:04x}) on {}: {}",
-                                        supported_device.name,
-                                        vid,
-                                        pid,
-                                        path,
-                                        e
-                                    );
-                                }
+                        let iface = Self::hidraw_iface_number(&name).unwrap_or(999);
+                        eprintln!("hidraw fallback candidate: /dev/{} vid={:04x} pid={:04x} iface={}", name, vid, pid, iface);
+                        candidates.push((name, vid, pid, iface));
+                    }
+                }
+                candidates.sort_by_key(|c| c.3); // prefer lowest interface number
+
+                for (name, vid, pid, iface) in candidates {
+                    if let Some(supported_device) = self.find_supported_device(vid, pid) {
+                        let path = format!("/dev/{}", name);
+                        let c_path = match CString::new(path.clone()) {
+                            Ok(p) => p,
+                            Err(_) => continue,
+                        };
+                        eprintln!(
+                            "Trying hidraw fallback open for {} ({:04x}:{:04x}) on {} (iface {})",
+                            supported_device.name,
+                            vid,
+                            pid,
+                            path,
+                            iface,
+                        );
+                        match api.open_path(c_path.as_c_str()) {
+                            Ok(dev) => {
+                                self.device = Some(RazerLaptop::new(
+                                    supported_device.name.clone(),
+                                    supported_device.features.clone(),
+                                    supported_device.fan.clone(),
+                                    dev,
+                                ));
+                                return;
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "hidraw fallback open failed for {} ({:04x}:{:04x}) on {}: {}",
+                                    supported_device.name,
+                                    vid,
+                                    pid,
+                                    path,
+                                    e
+                                );
                             }
                         }
                     }

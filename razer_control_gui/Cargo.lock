@@ -1229,6 +1229,7 @@ dependencies = [
  "ksni",
  "lazy_static",
  "libadwaita",
+ "libc",
  "log",
  "rand",
  "serde",

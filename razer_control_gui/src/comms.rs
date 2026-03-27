@@ -110,8 +110,8 @@ pub fn create() -> Option<UnixListener> {
             return None;
         }
     }
-    // Set restrictive umask before bind so the socket is never world-accessible
-    let old_umask = unsafe { umask(0o077) };
+    // Set permissive umask so non-root GUI/CLI can connect to the daemon socket
+    let old_umask = unsafe { umask(0o000) };
     let result = UnixListener::bind(SOCKET_PATH);
     unsafe { umask(old_umask) };
     match result {
@@ -125,6 +125,11 @@ pub fn create() -> Option<UnixListener> {
 
 #[allow(dead_code)]
 pub fn send_to_daemon(command: DaemonCommand, mut sock: UnixStream) -> Option<DaemonResponse> {
+    // Prevent blocking the GTK main thread forever if daemon is unresponsive
+    let timeout = Some(std::time::Duration::from_secs(5));
+    let _ = sock.set_read_timeout(timeout);
+    let _ = sock.set_write_timeout(timeout);
+
     if let Ok(encoded) = bincode::serialize(&command) {
         if sock.write_all(&encoded).is_ok() {
             let mut buf = [0u8; 4096];
