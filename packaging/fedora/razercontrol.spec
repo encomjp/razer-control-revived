@@ -69,9 +69,21 @@ install -D -m 644 razer_control_gui/data/services/systemd/razercontrol.service $
 udevadm control --reload-rules || :
 udevadm trigger --subsystem-match=hidraw --action=change || :
 %systemd_user_post razercontrol.service
+# Enable for all users and start for the installing user
+systemctl --global enable razercontrol.service 2>/dev/null || :
+if [ -n "$SUDO_USER" ]; then
+    runuser -l "$SUDO_USER" -- systemctl --user daemon-reload 2>/dev/null || :
+    runuser -l "$SUDO_USER" -- systemctl --user start razercontrol.service 2>/dev/null || :
+elif [ -n "$USER" ] && [ "$USER" != "root" ]; then
+    systemctl --user daemon-reload 2>/dev/null || :
+    systemctl --user start razercontrol.service 2>/dev/null || :
+fi
 
 %preun
 %systemd_user_preun razercontrol.service
+if [ $1 -eq 0 ]; then
+    systemctl --global disable razercontrol.service 2>/dev/null || :
+fi
 
 %postun
 %systemd_user_postun_with_restart razercontrol.service
