@@ -482,7 +482,7 @@ This software is provided AS-IS with **NO WARRANTY**.
 **Contributors**
 | Who | What |
 |-----|------|
-| [@johva1312](https://github.com/johva1312) | HID device init fallbacks — prefer `iface-0`, use `hidraw` as fallback for broader device compatibility |
+| [@johva1312](https://github.com/johva1312) | HID device init fallbacks — prefer `iface-0`, use `hidraw` as fallback for broader device compatibility; Fix partial socket reads — replace fixed-size `read()` with `read_to_end()` to prevent unexpected EOF (PR #8) |
 | [@sini](https://github.com/sini) | NixOS flake fixes — updated nixpkgs, fixed typos, ensured version parity |
 
 ---
