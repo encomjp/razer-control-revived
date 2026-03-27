@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.3.0~rc3
+Version:        0.3.0~rc4
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -63,8 +63,8 @@ install -D -m 644 razer_control_gui/data/services/systemd/razercontrol.service $
 %doc README.md
 
 %post
-udevadm control --reload-rules
-udevadm trigger
+udevadm control --reload-rules || :
+udevadm trigger --subsystem-match=hidraw --action=change || :
 %systemd_user_post razercontrol.service
 
 %preun
