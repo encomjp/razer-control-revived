@@ -462,6 +462,23 @@ impl DeviceManager {
     }
 
     pub fn get_fan_rpm(&mut self, ac: usize) -> i32 {
+        let live_fan_setting = {
+            if let Some(laptop) = self.get_device() {
+                let state = laptop.get_ac_state();
+                if state == ac {
+                    laptop.read_fan_setting().map(|rpm| rpm as i32)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        };
+
+        if let Some(rpm) = live_fan_setting {
+            return rpm;
+        }
+
         if let Some(config) = self.get_ac_config(ac) {
             return config.fan_rpm;
         }
@@ -870,15 +887,46 @@ impl RazerLaptop {
     }
 
     pub fn get_power_mode(&mut self, zone: u8) -> u8 {
+        if let Some((mode_byte, _manual_flag)) = self.read_zone_fan_state(zone) {
+            return mode_byte;
+        }
+        return 0;
+    }
+
+    fn read_zone_fan_state(&mut self, zone: u8) -> Option<(u8, u8)> {
         let mut report: RazerPacket = RazerPacket::new(0x0d, 0x82, 0x04);
         report.args[0] = 0x00;
         report.args[1] = zone;
         report.args[2] = 0x00;
         report.args[3] = 0x00;
-        if let Some(response) = self.send_report(report) {
-            return response.args[2];
+        self.send_report(report)
+            .map(|response| (response.args[2], response.args[3]))
+    }
+
+    fn set_zone_fan_state(&mut self, zone: u8, mode_byte: u8, manual_flag: u8) -> bool {
+        let mut report: RazerPacket = RazerPacket::new(0x0d, 0x02, 0x04);
+        report.args[0] = 0x00;
+        report.args[1] = zone;
+        report.args[2] = mode_byte;
+        report.args[3] = manual_flag;
+        self.send_report(report).is_some()
+    }
+
+    fn read_stored_fan_setpoint(&mut self, zone: u8) -> Option<u16> {
+        let mut report: RazerPacket = RazerPacket::new(0x0d, 0x81, 0x03);
+        report.args[0] = 0x00;
+        report.args[1] = zone;
+        report.args[2] = 0x00;
+        self.send_report(report)
+            .map(|response| response.args[2] as u16 * 100)
+    }
+
+    pub fn read_fan_setting(&mut self) -> Option<u16> {
+        let (_mode_byte, manual_flag) = self.read_zone_fan_state(0x01)?;
+        if manual_flag == 0 {
+            return Some(0);
         }
-        return 0;
+        self.read_stored_fan_setpoint(0x01)
     }
 
     fn set_power(&mut self, zone: u8) -> bool {
@@ -980,24 +1028,20 @@ impl RazerLaptop {
     }
 
     pub fn set_fan_rpm(&mut self, value: u16) -> bool {
-        if self.power != 4 {
-            match value == 0 {
-                true => self.fan_rpm = value as u8,
-                false => self.fan_rpm = self.clamp_fan(value),
-            }
-            self.get_power_mode(0x01);
-            self.set_power(0x01);
-            if value != 0 {
-                self.set_rpm(0x01);
-            }
-            self.get_power_mode(0x02);
-            self.set_power(0x02);
-            if value != 0 {
-                self.set_rpm(0x02);
-            }
+        if value == 0 {
+            self.fan_rpm = 0;
+            let zone1 = self.set_zone_fan_state(0x01, 0x00, 0x00);
+            let zone2 = self.set_zone_fan_state(0x02, 0x00, 0x00);
+            return zone1 && zone2;
         }
 
-        return true;
+        self.fan_rpm = self.clamp_fan(value);
+        let zone1 = self.set_zone_fan_state(0x01, 0x04, 0x01);
+        let zone2 = self.set_zone_fan_state(0x02, 0x04, 0x01);
+        let fan1 = self.set_rpm(0x01);
+        let fan2 = self.set_rpm(0x02);
+
+        return zone1 && zone2 && fan1 && fan2;
     }
 
     #[allow(dead_code)]
@@ -1010,12 +1054,8 @@ impl RazerLaptop {
     /// Note: on many Razer models this returns the configured target,
     /// not measured tachometer RPM (no tach register exposed via USB HID).
     pub fn read_fan_rpm_from_ec(&mut self) -> u16 {
-        let mut report: RazerPacket = RazerPacket::new(0x0d, 0x81, 0x03);
-        report.args[0] = 0x00;
-        report.args[1] = 0x01;
-        report.args[2] = 0x00;
-        if let Some(response) = self.send_report(report) {
-            return response.args[2] as u16 * 100;
+        if let Some(rpm) = self.read_stored_fan_setpoint(0x01) {
+            return rpm;
         }
         return self.fan_rpm as u16 * 100;
     }
