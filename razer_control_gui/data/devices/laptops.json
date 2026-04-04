@@ -221,7 +221,7 @@
         "vid": "1532",
         "pid": "0276",
         "features": ["logo", "boost"],
-        "fan": [3500, 5000]
+        "fan": [2000, 5400]
     },
     {
         "name": "Blade 15 Late 2021 Advanced",
