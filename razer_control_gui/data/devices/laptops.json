@@ -334,5 +334,12 @@
         "pid": "02C7",
         "features": ["logo", "boost", "bho"],
         "fan": [2200, 5000]
+    },
+    {
+        "name": "Razer Blade 2022 Advanced",
+        "vid": "1532",
+        "pid": "028a",
+        "features": ["logo", "boost", "bho"],
+        "fan": [2200, 5000]
     }
 ]
