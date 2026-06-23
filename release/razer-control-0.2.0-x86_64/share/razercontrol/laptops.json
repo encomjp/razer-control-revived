@@ -199,7 +199,7 @@
         "name": "Blade 14 2021",
         "vid": "1532",
         "pid": "0270",
-        "features": ["logo"],
+        "features": ["logo", "boost"],
         "fan": [3500, 5400]
     },
     {
