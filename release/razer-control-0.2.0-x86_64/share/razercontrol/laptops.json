@@ -199,8 +199,8 @@
         "name": "Blade 14 2021",
         "vid": "1532",
         "pid": "0270",
-        "features": ["logo"],
-        "fan": [3500, 5000]
+        "features": ["logo", "boost"],
+        "fan": [3500, 5400]
     },
     {
         "name": "Blade 15 Early 2022 Advanced",
