@@ -476,7 +476,7 @@ pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::Daemon
             }
 
             comms::DaemonCommand::SetStandardEffect{ name, params } => {
-                // TODO save standart effect may be struct ?
+                // TODO save standard effect may be struct ?
                 let mut res = false;
                 if let Some(laptop) = d.get_device() {
                     if let Ok(mut k) = EFFECT_MANAGER.lock() {

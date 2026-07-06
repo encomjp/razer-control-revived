@@ -209,7 +209,7 @@ impl DeviceManager {
         let str: Vec<u8> = fs::read(&path)?;
         let mut res: DeviceManager = DeviceManager::new();
         res.supported_devices = serde_json::from_slice(str.as_slice())?;
-        println!("suported devices found: {:?}", res.supported_devices.len());
+        println!("supported devices found: {:?}", res.supported_devices.len());
         match config::Configuration::read_from_config() {
             Ok(c) => res.config = Some(c),
             Err(_) => res.config = Some(config::Configuration::new()),
@@ -604,9 +604,8 @@ impl DeviceManager {
 
     pub fn find_supported_device(&mut self, vid: u16, pid: u16) -> Option<&SupportedDevice> {
         for device in &self.supported_devices {
-            // Unwrap: we control the strings and know they are are valid
-            let svid = u16::from_str_radix(&device.vid, 16).unwrap();
-            let spid = u16::from_str_radix(&device.pid, 16).unwrap();
+            let svid = u16::from_str_radix(&device.vid, 16).ok()?;
+            let spid = u16::from_str_radix(&device.pid, 16).ok()?;
 
             if svid == vid && spid == pid {
                 return Some(device);
