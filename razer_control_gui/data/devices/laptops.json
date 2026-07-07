@@ -319,7 +319,7 @@
         "vid": "1532",
         "pid": "02C5",
         "features": ["logo", "boost", "bho"],
-        "fan": [2200, 5000]
+        "fan": [2200, 5600]
     },
     {
         "name": "Blade 16 2025",
