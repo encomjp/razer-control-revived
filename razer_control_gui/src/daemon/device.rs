@@ -911,6 +911,13 @@ impl RazerLaptop {
         self.send_report(report).is_some()
     }
 
+    fn set_zone_manual_fan(&mut self, zone: u8, manual_flag: u8) -> bool {
+        if let Some((mode_byte, _)) = self.read_zone_fan_state(zone) {
+            return self.set_zone_fan_state(zone, mode_byte, manual_flag);
+        }
+        false
+    }
+
     fn read_stored_fan_setpoint(&mut self, zone: u8) -> Option<u16> {
         let mut report: RazerPacket = RazerPacket::new(0x0d, 0x81, 0x03);
         report.args[0] = 0x00;
@@ -1029,14 +1036,14 @@ impl RazerLaptop {
     pub fn set_fan_rpm(&mut self, value: u16) -> bool {
         if value == 0 {
             self.fan_rpm = 0;
-            let zone1 = self.set_zone_fan_state(0x01, 0x00, 0x00);
-            let zone2 = self.set_zone_fan_state(0x02, 0x00, 0x00);
+            let zone1 = self.set_zone_manual_fan(0x01, 0x00);
+            let zone2 = self.set_zone_manual_fan(0x02, 0x00);
             return zone1 && zone2;
         }
 
         self.fan_rpm = self.clamp_fan(value);
-        let zone1 = self.set_zone_fan_state(0x01, 0x04, 0x01);
-        let zone2 = self.set_zone_fan_state(0x02, 0x04, 0x01);
+        let zone1 = self.set_zone_manual_fan(0x01, 0x01);
+        let zone2 = self.set_zone_manual_fan(0x02, 0x01);
         let fan1 = self.set_rpm(0x01);
         let fan2 = self.set_rpm(0x02);
 
