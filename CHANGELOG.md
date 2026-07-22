@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.1 (2026-07-22)
+
+### Changes
+
+- Remove separator line from system monitor status bar (Adrian Kozlowski)
+
+### Device Support
+
+- Add Razer Blade 18 (2026) — thanks @iWalkingCorpse (#29)
+- Add support for Razer Blade 15 2022 Advanced — thanks @quarterstar (#19)
+- Enable per-key RGB for Blade 14 2022 — thanks @l3ifk (#23)
+- Add boost feature and update fan speed for Blade 14 2021 — thanks @ejcupcake (#27)
+
+### Bug Fixes
+
+- Fix Blade 14 2025 fan mode handling — thanks @changyun233 (#28)
+- Fix manual fan control for Blade 15 2021 Advanced — thanks @costantinoai (#15)
+- Fix daemon panic on malformed laptops.json hex values
+
 ## 0.3.0-rc1 (2026-03-27)
 
 ### Bug Fixes
