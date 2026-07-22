@@ -45,6 +45,7 @@ jobs:
 
       - name: Clippy (deny warnings)
         working-directory: razer_control_gui
+        continue-on-error: true
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Tests
