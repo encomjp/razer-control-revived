@@ -348,7 +348,10 @@ fn read_dgpu_power() -> Option<f64> {
 
 fn read_dgpu_util() -> Option<u32> {
     if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args(["--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"])
+        .args([
+            "--query-gpu=utilization.gpu",
+            "--format=csv,noheader,nounits",
+        ])
         .output()
     {
         if output.status.success() {
@@ -437,7 +440,9 @@ fn read_cpu_util() -> Option<u32> {
             if fields.len() >= 5 && fields[0] == "cpu" {
                 let mut total: u64 = 0;
                 for f in &fields[1..] {
-                    if let Ok(v) = f.parse::<u64>() { total += v; }
+                    if let Ok(v) = f.parse::<u64>() {
+                        total += v;
+                    }
                 }
                 let idle = fields[4].parse::<u64>().unwrap_or(0);
                 let prev_idle = LAST_IDLE.swap(idle, Ordering::Relaxed);
@@ -446,7 +451,9 @@ fn read_cpu_util() -> Option<u32> {
                     let d_idle = idle.wrapping_sub(prev_idle);
                     let d_total = total.wrapping_sub(prev_total);
                     if d_total > 0 {
-                        return Some((100.0 * (1.0 - d_idle as f64 / d_total as f64)).round() as u32);
+                        return Some(
+                            (100.0 * (1.0 - d_idle as f64 / d_total as f64)).round() as u32
+                        );
                     }
                 }
             }

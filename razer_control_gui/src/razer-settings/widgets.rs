@@ -1,9 +1,9 @@
+use adw::prelude::*;
+use gtk::prelude::*;
 use gtk4 as gtk;
 use libadwaita as adw;
-use gtk::prelude::*;
-use adw::prelude::*;
-use std::rc::Rc;
 use std::cell::Cell;
+use std::rc::Rc;
 
 pub struct SettingsPage {
     pub page: adw::PreferencesPage,

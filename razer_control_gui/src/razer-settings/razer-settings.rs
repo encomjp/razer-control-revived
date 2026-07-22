@@ -958,7 +958,7 @@ fn main() {
             Some(name) => name,
             None => {
                 eprintln!("Failed to get device name from daemon");
-                show_error_dialog(app, 
+                show_error_dialog(app,
                     "Failed to get device name.\n\n\
                     The daemon may not be running or failed to respond.\n\
                     Try: systemctl --user restart razercontrol"
