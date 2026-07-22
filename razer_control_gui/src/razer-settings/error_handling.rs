@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub fn crash_with_msg(msg: impl AsRef<str>) -> ! {
     let msg = msg.as_ref();
     show_msg(msg);

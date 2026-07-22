@@ -26,7 +26,7 @@ pub struct EffectSave {
 /// An effect is a lighting function that is updated 30 times per second
 /// in order to create an animation of some description on the laptop's
 /// keyboard
-#[allow(dead_code)]
+#[allow(dead_code, clippy::new_ret_no_self)]
 pub trait Effect: Send + Sync {
     /// Returns a new instance of an Effect
     fn new(args: Vec<u8>) -> Box<dyn Effect>
@@ -63,14 +63,14 @@ unsafe impl Sync for EffectLayer {}
 
 impl EffectLayer {
     fn new(effect: Box<dyn Effect>, mask: [bool; 90]) -> EffectLayer {
-        return EffectLayer {
+        EffectLayer {
             key_mask: mask.to_vec(),
             effect,
-        };
+        }
     }
 
     fn update(&mut self) -> board::KeyboardData {
-        return self.effect.update();
+        self.effect.update()
     }
 
     fn get_save(&mut self) -> Option<serde_json::Value> {
@@ -78,11 +78,19 @@ impl EffectLayer {
             Ok(mut x) => {
                 let keys = match serde_json::to_value(&self.key_mask) {
                     Ok(k) => k,
-                    Err(e) => { eprintln!("Failed to serialize key_mask: {}", e); return None; }
+                    Err(e) => {
+                        eprintln!("Failed to serialize key_mask: {}", e);
+                        return None;
+                    }
                 };
                 match x.as_object_mut() {
-                    Some(obj) => { obj.insert(String::from("key_mask"), keys); }
-                    None => { eprintln!("Effect save is not a JSON object"); return None; }
+                    Some(obj) => {
+                        obj.insert(String::from("key_mask"), keys);
+                    }
+                    None => {
+                        eprintln!("Effect save is not a JSON object");
+                        return None;
+                    }
                 }
                 Some(x)
             }
@@ -97,7 +105,10 @@ impl EffectLayer {
         }
         let key_mask: Vec<bool> = match serde_json::from_value(json["key_mask"].clone()) {
             Ok(v) => v,
-            Err(e) => { eprintln!("Failed to deserialize key_mask: {}", e); return None; }
+            Err(e) => {
+                eprintln!("Failed to deserialize key_mask: {}", e);
+                return None;
+            }
         };
         if key_mask.len() != 90 {
             eprintln!(
@@ -108,11 +119,17 @@ impl EffectLayer {
         }
         let name: String = match serde_json::from_value(json["name"].clone()) {
             Ok(v) => v,
-            Err(e) => { eprintln!("Failed to deserialize effect name: {}", e); return None; }
+            Err(e) => {
+                eprintln!("Failed to deserialize effect name: {}", e);
+                return None;
+            }
         };
         let args: Vec<u8> = match serde_json::from_value(json["args"].clone()) {
             Ok(v) => v,
-            Err(e) => { eprintln!("Failed to deserialize effect args: {}", e); return None; }
+            Err(e) => {
+                eprintln!("Failed to deserialize effect args: {}", e);
+                return None;
+            }
         };
 
         let effect: Option<Box<dyn Effect>> = match name.as_str() {
@@ -123,7 +140,10 @@ impl EffectLayer {
             _ => None,
         };
         match effect {
-            Some(e) => Some(EffectLayer { key_mask, effect: e }),
+            Some(e) => Some(EffectLayer {
+                key_mask,
+                effect: e,
+            }),
             None => {
                 eprintln!("Effect failed to load. Invalid name: {}", name);
                 None
@@ -168,7 +188,7 @@ impl EffectManager {
         self.layers.pop();
         // If no more layers, erase keyboard rendering and set it to black
         if self.layers.is_empty() {
-            self.render_board.set_kbd_colour(0, 0, 0); 
+            self.render_board.set_kbd_colour(0, 0, 0);
             self.render_board.update_kbd(laptop);
             self.render_board.update_custom_mode(laptop);
         }
@@ -208,7 +228,7 @@ impl EffectManager {
                 }
             }
         }
-        return save_json;
+        save_json
     }
 
     pub fn load_from_save(&mut self, mut json: serde_json::Value) {

@@ -1,24 +1,23 @@
+use adw::prelude::*;
 use gtk4 as gtk;
 use libadwaita as adw;
-use gtk::prelude::*;
-use adw::prelude::*;
+use std::cell::Cell;
 use std::fs;
 use std::rc::Rc;
-use std::cell::Cell;
 use std::sync::Arc;
 use std::time::Duration;
 
 #[path = "../comms.rs"]
 mod comms;
 mod error_handling;
-mod widgets;
-mod util;
 mod tray;
+mod util;
+mod widgets;
 
-use service::SupportedDevice;
 use error_handling::*;
-use widgets::*;
+use service::SupportedDevice;
 use util::*;
+use widgets::*;
 
 fn send_data(opt: comms::DaemonCommand) -> Option<comms::DaemonResponse> {
     match comms::try_bind() {
@@ -34,9 +33,17 @@ fn get_gpu_status() -> Option<(Vec<comms::GpuInfo>, bool, String, bool)> {
     let response = send_data(comms::DaemonCommand::GetGpuStatus)?;
     use comms::DaemonResponse::*;
     match response {
-        GetGpuStatus { gpus, dgpu_runtime_pm, envycontrol_mode, envycontrol_available } => {
-            Some((gpus, dgpu_runtime_pm, envycontrol_mode, envycontrol_available))
-        }
+        GetGpuStatus {
+            gpus,
+            dgpu_runtime_pm,
+            envycontrol_mode,
+            envycontrol_available,
+        } => Some((
+            gpus,
+            dgpu_runtime_pm,
+            envycontrol_mode,
+            envycontrol_available,
+        )),
         response => {
             println!("Instead of GetGpuStatus got {response:?}");
             None
@@ -57,7 +64,9 @@ fn set_dgpu_runtime_pm(enabled: bool) -> Option<bool> {
 }
 
 fn set_gpu_mode(mode: &str) -> Option<(bool, String)> {
-    let response = send_data(comms::DaemonCommand::SetGpuMode { mode: mode.to_string() })?;
+    let response = send_data(comms::DaemonCommand::SetGpuMode {
+        mode: mode.to_string(),
+    })?;
     use comms::DaemonResponse::*;
     match response {
         SetGpuMode { result, message } => Some((result, message)),
@@ -123,7 +132,7 @@ fn set_bho(is_on: bool, threshold: u8) -> Option<bool> {
 
 fn get_brightness(ac: bool) -> Option<u8> {
     let ac = if ac { 1 } else { 0 };
-    let response = send_data(comms::DaemonCommand::GetBrightness{ ac })?;
+    let response = send_data(comms::DaemonCommand::GetBrightness { ac })?;
     use comms::DaemonResponse::*;
     match response {
         GetBrightness { result } => Some(result),
@@ -149,7 +158,7 @@ fn set_brightness(ac: bool, val: u8) -> Option<bool> {
 
 fn get_logo(ac: bool) -> Option<u8> {
     let ac = if ac { 1 } else { 0 };
-    let response = send_data(comms::DaemonCommand::GetLogoLedState{ ac })?;
+    let response = send_data(comms::DaemonCommand::GetLogoLedState { ac })?;
     use comms::DaemonResponse::*;
     match response {
         GetLogoLedState { logo_state } => Some(logo_state),
@@ -162,7 +171,7 @@ fn get_logo(ac: bool) -> Option<u8> {
 
 fn set_logo(ac: bool, logo_state: u8) -> Option<bool> {
     let ac = if ac { 1 } else { 0 };
-    let response = send_data(comms::DaemonCommand::SetLogoLedState{ ac , logo_state })?;
+    let response = send_data(comms::DaemonCommand::SetLogoLedState { ac, logo_state })?;
     use comms::DaemonResponse::*;
     match response {
         SetLogoLedState { result } => Some(result),
@@ -186,7 +195,10 @@ fn get_standard_effect() -> Option<(u8, Vec<u8>)> {
 }
 
 fn set_effect(name: &str, values: Vec<u8>) -> Option<bool> {
-    let response = send_data(comms::DaemonCommand::SetEffect { name: name.into(), params: values })?;
+    let response = send_data(comms::DaemonCommand::SetEffect {
+        name: name.into(),
+        params: values,
+    })?;
     use comms::DaemonResponse::*;
     match response {
         SetEffect { result } => Some(result),
@@ -201,13 +213,13 @@ fn get_power(ac: bool) -> Option<(u8, u8, u8)> {
     let ac = if ac { 1 } else { 0 };
     let mut result = (0, 0, 0);
 
-    let response = send_data(comms::DaemonCommand::GetPwrLevel{ ac })?;
+    let response = send_data(comms::DaemonCommand::GetPwrLevel { ac })?;
     use comms::DaemonResponse::*;
     match response {
         GetPwrLevel { pwr } => result.0 = pwr,
         response => {
             println!("Instead of GetPwrLevel got {response:?}");
-            return None
+            return None;
         }
     }
 
@@ -216,7 +228,7 @@ fn get_power(ac: bool) -> Option<(u8, u8, u8)> {
         GetCPUBoost { cpu } => result.1 = cpu,
         response => {
             println!("Instead of GetCPUBoost got {response:?}");
-            return None
+            return None;
         }
     }
 
@@ -225,7 +237,7 @@ fn get_power(ac: bool) -> Option<(u8, u8, u8)> {
         GetGPUBoost { gpu } => result.2 = gpu,
         response => {
             println!("Instead of GetGPUBoost got {response:?}");
-            return None
+            return None;
         }
     }
     Some(result)
@@ -233,7 +245,12 @@ fn get_power(ac: bool) -> Option<(u8, u8, u8)> {
 
 fn set_power(ac: bool, power: (u8, u8, u8)) -> Option<bool> {
     let ac = if ac { 1 } else { 0 };
-    let response = send_data(comms::DaemonCommand::SetPowerMode { ac, pwr: power.0, cpu: power.1, gpu: power.2 })?;
+    let response = send_data(comms::DaemonCommand::SetPowerMode {
+        ac,
+        pwr: power.0,
+        cpu: power.1,
+        gpu: power.2,
+    })?;
     use comms::DaemonResponse::*;
     match response {
         SetPowerMode { result } => Some(result),
@@ -246,7 +263,7 @@ fn set_power(ac: bool, power: (u8, u8, u8)) -> Option<bool> {
 
 fn get_fan_speed(ac: bool) -> Option<i32> {
     let ac = if ac { 1 } else { 0 };
-    let response = send_data(comms::DaemonCommand::GetFanSpeed{ ac })?;
+    let response = send_data(comms::DaemonCommand::GetFanSpeed { ac })?;
     use comms::DaemonResponse::*;
     match response {
         GetFanSpeed { rpm } => Some(rpm),
@@ -259,7 +276,7 @@ fn get_fan_speed(ac: bool) -> Option<i32> {
 
 fn set_fan_speed(ac: bool, value: i32) -> Option<bool> {
     let ac = if ac { 1 } else { 0 };
-    let response = send_data(comms::DaemonCommand::SetFanSpeed{ ac, rpm: value })?;
+    let response = send_data(comms::DaemonCommand::SetFanSpeed { ac, rpm: value })?;
     use comms::DaemonResponse::*;
     match response {
         SetFanSpeed { result } => Some(result),
@@ -279,10 +296,10 @@ fn get_cpu_temperature() -> Option<f64> {
                 let name = name.trim();
                 if name == "k10temp" || name == "zenpower" || name == "coretemp" {
                     let temp_path = entry.path().join("temp1_input");
-                    if let Ok(content) = fs::read_to_string(&temp_path) {
-                        if let Ok(temp) = content.trim().parse::<f64>() {
-                            return Some(temp / 1000.0);
-                        }
+                    if let Ok(content) = fs::read_to_string(&temp_path)
+                        && let Ok(temp) = content.trim().parse::<f64>()
+                    {
+                        return Some(temp / 1000.0);
                     }
                 }
             }
@@ -296,10 +313,10 @@ fn get_cpu_temperature() -> Option<f64> {
     ];
 
     for path in paths {
-        if let Ok(content) = fs::read_to_string(path) {
-            if let Ok(temp) = content.trim().parse::<f64>() {
-                return Some(temp / 1000.0);
-            }
+        if let Ok(content) = fs::read_to_string(path)
+            && let Ok(temp) = content.trim().parse::<f64>()
+        {
+            return Some(temp / 1000.0);
         }
     }
     None
@@ -308,37 +325,35 @@ fn get_cpu_temperature() -> Option<f64> {
 /// Read dGPU temperature (NVIDIA)
 fn get_gpu_temperature() -> Option<f64> {
     if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args(["--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"])
+        .args([
+            "--query-gpu=temperature.gpu",
+            "--format=csv,noheader,nounits",
+        ])
         .output()
+        && output.status.success()
+        && let Ok(temp_str) = String::from_utf8(output.stdout)
+        && let Ok(temp) = temp_str.trim().parse::<f64>()
     {
-        if output.status.success() {
-            if let Ok(temp_str) = String::from_utf8(output.stdout) {
-                if let Ok(temp) = temp_str.trim().parse::<f64>() {
-                    return Some(temp);
-                }
-            }
-        }
+        return Some(temp);
     }
 
     if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
         for entry in entries.flatten() {
             let name_path = entry.path().join("name");
-            if let Ok(name) = fs::read_to_string(&name_path) {
-                if name.trim() == "nvidia" {
-                    let temp_path = entry.path().join("temp1_input");
-                    if let Ok(content) = fs::read_to_string(&temp_path) {
-                        if let Ok(temp) = content.trim().parse::<f64>() {
-                            return Some(temp / 1000.0);
-                        }
-                    }
+            if let Ok(name) = fs::read_to_string(&name_path)
+                && name.trim() == "nvidia"
+            {
+                let temp_path = entry.path().join("temp1_input");
+                if let Ok(content) = fs::read_to_string(&temp_path)
+                    && let Ok(temp) = content.trim().parse::<f64>()
+                {
+                    return Some(temp / 1000.0);
                 }
             }
         }
     }
     None
 }
-
-
 
 /// Read system/CPU power consumption from RAPL (supports AMD and Intel)
 fn get_system_power() -> Option<f64> {
@@ -350,29 +365,29 @@ fn get_system_power() -> Option<f64> {
     ];
 
     for path in &energy_paths {
-        if let Ok(content) = fs::read_to_string(path) {
-            if let Ok(energy) = content.trim().parse::<u64>() {
-                static LAST_ENERGY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-                static LAST_TIME: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        if let Ok(content) = fs::read_to_string(path)
+            && let Ok(energy) = content.trim().parse::<u64>()
+        {
+            static LAST_ENERGY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+            static LAST_TIME: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
-                let now = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_micros() as u64;
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_micros() as u64;
 
-                let prev_energy = LAST_ENERGY.swap(energy, std::sync::atomic::Ordering::Relaxed);
-                let prev_time = LAST_TIME.swap(now, std::sync::atomic::Ordering::Relaxed);
+            let prev_energy = LAST_ENERGY.swap(energy, std::sync::atomic::Ordering::Relaxed);
+            let prev_time = LAST_TIME.swap(now, std::sync::atomic::Ordering::Relaxed);
 
-                if prev_energy > 0 && prev_time > 0 && energy > prev_energy {
-                    let delta_energy = energy - prev_energy;
-                    let delta_time = now - prev_time;
-                    if delta_time > 0 {
-                        let power = delta_energy as f64 / delta_time as f64;
-                        return Some(power);
-                    }
+            if prev_energy > 0 && prev_time > 0 && energy > prev_energy {
+                let delta_energy = energy - prev_energy;
+                let delta_time = now - prev_time;
+                if delta_time > 0 {
+                    let power = delta_energy as f64 / delta_time as f64;
+                    return Some(power);
                 }
-                return None; // Found path but need second reading
             }
+            return None; // Found path but need second reading
         }
     }
     None
@@ -383,14 +398,11 @@ fn get_dgpu_power() -> Option<f64> {
     if let Ok(output) = std::process::Command::new("nvidia-smi")
         .args(["--query-gpu=power.draw", "--format=csv,noheader,nounits"])
         .output()
+        && output.status.success()
+        && let Ok(power_str) = String::from_utf8(output.stdout)
+        && let Ok(power) = power_str.trim().parse::<f64>()
     {
-        if output.status.success() {
-            if let Ok(power_str) = String::from_utf8(output.stdout) {
-                if let Ok(power) = power_str.trim().parse::<f64>() {
-                    return Some(power);
-                }
-            }
-        }
+        return Some(power);
     }
     None
 }
@@ -398,16 +410,16 @@ fn get_dgpu_power() -> Option<f64> {
 /// Read NVIDIA dGPU utilization
 fn get_dgpu_utilization() -> Option<u32> {
     if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args(["--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"])
+        .args([
+            "--query-gpu=utilization.gpu",
+            "--format=csv,noheader,nounits",
+        ])
         .output()
+        && output.status.success()
+        && let Ok(util_str) = String::from_utf8(output.stdout)
+        && let Ok(util) = util_str.trim().parse::<u32>()
     {
-        if output.status.success() {
-            if let Ok(util_str) = String::from_utf8(output.stdout) {
-                if let Ok(util) = util_str.trim().parse::<u32>() {
-                    return Some(util);
-                }
-            }
-        }
+        return Some(util);
     }
     None
 }
@@ -417,14 +429,14 @@ fn get_igpu_power() -> Option<f64> {
     if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
         for entry in entries.flatten() {
             let name_path = entry.path().join("name");
-            if let Ok(name) = fs::read_to_string(&name_path) {
-                if name.trim() == "amdgpu" {
-                    let power_path = entry.path().join("power1_average");
-                    if let Ok(content) = fs::read_to_string(&power_path) {
-                        if let Ok(power_uw) = content.trim().parse::<f64>() {
-                            return Some(power_uw / 1_000_000.0);
-                        }
-                    }
+            if let Ok(name) = fs::read_to_string(&name_path)
+                && name.trim() == "amdgpu"
+            {
+                let power_path = entry.path().join("power1_average");
+                if let Ok(content) = fs::read_to_string(&power_path)
+                    && let Ok(power_uw) = content.trim().parse::<f64>()
+                {
+                    return Some(power_uw / 1_000_000.0);
                 }
             }
         }
@@ -437,25 +449,27 @@ fn get_igpu_power() -> Option<f64> {
     ];
 
     for path in &paths {
-        if let Ok(content) = fs::read_to_string(path) {
-            if let Ok(energy) = content.trim().parse::<u64>() {
-                static LAST_IGPU_ENERGY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-                static LAST_IGPU_TIME: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        if let Ok(content) = fs::read_to_string(path)
+            && let Ok(energy) = content.trim().parse::<u64>()
+        {
+            static LAST_IGPU_ENERGY: std::sync::atomic::AtomicU64 =
+                std::sync::atomic::AtomicU64::new(0);
+            static LAST_IGPU_TIME: std::sync::atomic::AtomicU64 =
+                std::sync::atomic::AtomicU64::new(0);
 
-                let now = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_micros() as u64;
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_micros() as u64;
 
-                let prev_energy = LAST_IGPU_ENERGY.swap(energy, std::sync::atomic::Ordering::Relaxed);
-                let prev_time = LAST_IGPU_TIME.swap(now, std::sync::atomic::Ordering::Relaxed);
+            let prev_energy = LAST_IGPU_ENERGY.swap(energy, std::sync::atomic::Ordering::Relaxed);
+            let prev_time = LAST_IGPU_TIME.swap(now, std::sync::atomic::Ordering::Relaxed);
 
-                if prev_energy > 0 && prev_time > 0 && energy > prev_energy {
-                    let delta_energy = energy - prev_energy;
-                    let delta_time = now - prev_time;
-                    if delta_time > 0 {
-                        return Some(delta_energy as f64 / delta_time as f64);
-                    }
+            if prev_energy > 0 && prev_time > 0 && energy > prev_energy {
+                let delta_energy = energy - prev_energy;
+                let delta_time = now - prev_time;
+                if delta_time > 0 {
+                    return Some(delta_energy as f64 / delta_time as f64);
                 }
             }
         }
@@ -467,14 +481,14 @@ fn get_igpu_power() -> Option<f64> {
 fn get_igpu_utilization() -> Option<u32> {
     for card in ["card0", "card1", "card2"] {
         let busy_path = format!("/sys/class/drm/{}/device/gpu_busy_percent", card);
-        if let Ok(content) = fs::read_to_string(&busy_path) {
-            if let Ok(util) = content.trim().parse::<u32>() {
-                let driver_path = format!("/sys/class/drm/{}/device/driver", card);
-                if let Ok(driver_link) = fs::read_link(&driver_path) {
-                    if driver_link.to_string_lossy().contains("amdgpu") {
-                        return Some(util);
-                    }
-                }
+        if let Ok(content) = fs::read_to_string(&busy_path)
+            && let Ok(util) = content.trim().parse::<u32>()
+        {
+            let driver_path = format!("/sys/class/drm/{}/device/driver", card);
+            if let Ok(driver_link) = fs::read_link(&driver_path)
+                && driver_link.to_string_lossy().contains("amdgpu")
+            {
+                return Some(util);
             }
         }
     }
@@ -490,17 +504,15 @@ fn get_igpu_utilization() -> Option<u32> {
     ];
 
     for (i, path) in paths.iter().enumerate() {
-        if let Ok(act_content) = fs::read_to_string(path) {
-            if let Ok(max_content) = fs::read_to_string(&max_paths[i]) {
-                if let (Ok(act), Ok(max)) = (
-                    act_content.trim().parse::<f64>(),
-                    max_content.trim().parse::<f64>()
-                ) {
-                    if max > 0.0 {
-                        return Some(((act / max) * 100.0) as u32);
-                    }
-                }
-            }
+        if let Ok(act_content) = fs::read_to_string(path)
+            && let Ok(max_content) = fs::read_to_string(max_paths[i])
+            && let (Ok(act), Ok(max)) = (
+                act_content.trim().parse::<f64>(),
+                max_content.trim().parse::<f64>(),
+            )
+            && max > 0.0
+        {
+            return Some(((act / max) * 100.0) as u32);
         }
     }
     None
@@ -511,15 +523,15 @@ fn get_igpu_temperature() -> Option<f64> {
     if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
         for entry in entries.flatten() {
             let name_path = entry.path().join("name");
-            if let Ok(name) = fs::read_to_string(&name_path) {
-                if name.trim() == "amdgpu" {
-                    for temp_file in ["temp1_input", "temp2_input"] {
-                        let temp_path = entry.path().join(temp_file);
-                        if let Ok(content) = fs::read_to_string(&temp_path) {
-                            if let Ok(temp) = content.trim().parse::<f64>() {
-                                return Some(temp / 1000.0);
-                            }
-                        }
+            if let Ok(name) = fs::read_to_string(&name_path)
+                && name.trim() == "amdgpu"
+            {
+                for temp_file in ["temp1_input", "temp2_input"] {
+                    let temp_path = entry.path().join(temp_file);
+                    if let Ok(content) = fs::read_to_string(&temp_path)
+                        && let Ok(temp) = content.trim().parse::<f64>()
+                    {
+                        return Some(temp / 1000.0);
                     }
                 }
             }
@@ -532,10 +544,10 @@ fn get_igpu_temperature() -> Option<f64> {
 fn get_battery_percentage() -> Option<u8> {
     for bat in ["BAT0", "BAT1"] {
         let path = format!("/sys/class/power_supply/{}/capacity", bat);
-        if let Ok(content) = fs::read_to_string(&path) {
-            if let Ok(pct) = content.trim().parse::<u8>() {
-                return Some(pct);
-            }
+        if let Ok(content) = fs::read_to_string(&path)
+            && let Ok(pct) = content.trim().parse::<u8>()
+        {
+            return Some(pct);
         }
     }
     None
@@ -560,12 +572,14 @@ fn get_battery_power() -> Option<f64> {
     for bat in ["BAT0", "BAT1"] {
         let current_path = format!("/sys/class/power_supply/{}/current_now", bat);
         let voltage_path = format!("/sys/class/power_supply/{}/voltage_now", bat);
-        if let (Ok(c_str), Ok(v_str)) = (fs::read_to_string(&current_path), fs::read_to_string(&voltage_path)) {
-            if let (Ok(current_ua), Ok(voltage_uv)) = (c_str.trim().parse::<u64>(), v_str.trim().parse::<u64>()) {
-                if current_ua > 0 {
-                    return Some(current_ua as f64 * voltage_uv as f64 / 1e12);
-                }
-            }
+        if let (Ok(c_str), Ok(v_str)) = (
+            fs::read_to_string(&current_path),
+            fs::read_to_string(&voltage_path),
+        ) && let (Ok(current_ua), Ok(voltage_uv)) =
+            (c_str.trim().parse::<u64>(), v_str.trim().parse::<u64>())
+            && current_ua > 0
+        {
+            return Some(current_ua as f64 * voltage_uv as f64 / 1e12);
         }
     }
     None
@@ -576,28 +590,28 @@ fn get_cpu_utilization() -> Option<u32> {
     static LAST_IDLE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     static LAST_TOTAL: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
-    if let Ok(content) = fs::read_to_string("/proc/stat") {
-        if let Some(line) = content.lines().next() {
-            let fields: Vec<&str> = line.split_whitespace().collect();
-            if fields.len() >= 5 && fields[0] == "cpu" {
-                let mut total: u64 = 0;
-                for f in &fields[1..] {
-                    if let Ok(v) = f.parse::<u64>() {
-                        total += v;
-                    }
+    if let Ok(content) = fs::read_to_string("/proc/stat")
+        && let Some(line) = content.lines().next()
+    {
+        let fields: Vec<&str> = line.split_whitespace().collect();
+        if fields.len() >= 5 && fields[0] == "cpu" {
+            let mut total: u64 = 0;
+            for f in &fields[1..] {
+                if let Ok(v) = f.parse::<u64>() {
+                    total += v;
                 }
-                let idle = fields[4].parse::<u64>().unwrap_or(0);
+            }
+            let idle = fields[4].parse::<u64>().unwrap_or(0);
 
-                let prev_idle = LAST_IDLE.swap(idle, std::sync::atomic::Ordering::Relaxed);
-                let prev_total = LAST_TOTAL.swap(total, std::sync::atomic::Ordering::Relaxed);
+            let prev_idle = LAST_IDLE.swap(idle, std::sync::atomic::Ordering::Relaxed);
+            let prev_total = LAST_TOTAL.swap(total, std::sync::atomic::Ordering::Relaxed);
 
-                if prev_total > 0 {
-                    let d_idle = idle.wrapping_sub(prev_idle);
-                    let d_total = total.wrapping_sub(prev_total);
-                    if d_total > 0 {
-                        let usage = 100.0 * (1.0 - d_idle as f64 / d_total as f64);
-                        return Some(usage.round() as u32);
-                    }
+            if prev_total > 0 {
+                let d_idle = idle.wrapping_sub(prev_idle);
+                let d_total = total.wrapping_sub(prev_total);
+                if d_total > 0 {
+                    let usage = 100.0 * (1.0 - d_idle as f64 / d_total as f64);
+                    return Some(usage.round() as u32);
                 }
             }
         }
@@ -658,24 +672,26 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
 
     let cpu_name = util::get_cpu_name().unwrap_or_else(|| "CPU".to_string());
     // Shorten extremely long CPU names (e.g. "AMD Ryzen 9 7945HX with Radeon Graphics" -> "AMD Ryzen 9 7945HX")
-    let cpu_label = cpu_name.replace(" with Radeon Graphics", "").replace(" 16-Core Processor", "");
+    let cpu_label = cpu_name
+        .replace(" with Radeon Graphics", "")
+        .replace(" 16-Core Processor", "");
 
     // Fetch detected GPUs to find names
     let mut igpu_label = "iGPU".to_string();
     let mut dgpu_label = "dGPU".to_string();
-    
+
     if let Some((gpu_list, _, _, _)) = get_gpu_status() {
         for gpu_info in gpu_list {
-           let name = gpu_info.name;
-           // Heuristic: NVIDIA/Discrete usually dGPU; AMD/Intel usually iGPU (unless discrete)
-           if name.to_uppercase().contains("NVIDIA") {
-               dgpu_label = name.replace(" Laptop GPU", "");
-           } else if name.to_uppercase().contains("AMD") || name.to_uppercase().contains("INTEL") {
-               // Assume the first non-NVIDIA is iGPU
-               if igpu_label == "iGPU" {
-                   igpu_label = name.replace(" Radeon Graphics", "");
-               }
-           }
+            let name = gpu_info.name;
+            // Heuristic: NVIDIA/Discrete usually dGPU; AMD/Intel usually iGPU (unless discrete)
+            if name.to_uppercase().contains("NVIDIA") {
+                dgpu_label = name.replace(" Laptop GPU", "");
+            } else if name.to_uppercase().contains("AMD") || name.to_uppercase().contains("INTEL") {
+                // Assume the first non-NVIDIA is iGPU
+                if igpu_label == "iGPU" {
+                    igpu_label = name.replace(" Radeon Graphics", "");
+                }
+            }
         }
     }
 
@@ -738,16 +754,29 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
 
         // CPU
         match cpu_temp {
-            Some(t) => { cpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t)); cpu_row.set_visible(true); }
+            Some(t) => {
+                cpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t));
+                cpu_row.set_visible(true);
+            }
             None => cpu_row.set_visible(false),
         }
         match sys_power {
-            Some(w) => { cpu_power_l.set_text(&format!("{:.1} W", w)); cpu_power_l.set_visible(true); }
+            Some(w) => {
+                cpu_power_l.set_text(&format!("{:.1} W", w));
+                cpu_power_l.set_visible(true);
+            }
             None => cpu_power_l.set_visible(false),
         }
         match cpu_util {
-            Some(u) => { cpu_util_l.set_text(&format!("{}%", u)); cpu_util_l.set_visible(true); cpu_dot.set_visible(sys_power.is_some()); }
-            None => { cpu_util_l.set_visible(false); cpu_dot.set_visible(false); }
+            Some(u) => {
+                cpu_util_l.set_text(&format!("{}%", u));
+                cpu_util_l.set_visible(true);
+                cpu_dot.set_visible(sys_power.is_some());
+            }
+            None => {
+                cpu_util_l.set_visible(false);
+                cpu_dot.set_visible(false);
+            }
         }
 
         // iGPU
@@ -755,31 +784,57 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
         igpu_row.set_visible(igpu_has);
         if igpu_has {
             match igpu_temp {
-                Some(t) => { igpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t)); igpu_temp_l.set_visible(true); }
+                Some(t) => {
+                    igpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t));
+                    igpu_temp_l.set_visible(true);
+                }
                 None => igpu_temp_l.set_visible(false),
             }
             match igpu_pwr {
-                Some(w) => { igpu_power_l.set_text(&format!("{:.1} W", w)); igpu_power_l.set_visible(true); }
+                Some(w) => {
+                    igpu_power_l.set_text(&format!("{:.1} W", w));
+                    igpu_power_l.set_visible(true);
+                }
                 None => igpu_power_l.set_visible(false),
             }
             match igpu_util {
-                Some(u) => { igpu_util_l.set_text(&format!("{}%", u)); igpu_util_l.set_visible(true); igpu_dot.set_visible(igpu_pwr.is_some()); }
-                None => { igpu_util_l.set_visible(false); igpu_dot.set_visible(false); }
+                Some(u) => {
+                    igpu_util_l.set_text(&format!("{}%", u));
+                    igpu_util_l.set_visible(true);
+                    igpu_dot.set_visible(igpu_pwr.is_some());
+                }
+                None => {
+                    igpu_util_l.set_visible(false);
+                    igpu_dot.set_visible(false);
+                }
             }
         }
 
         // dGPU
         match dgpu_temp {
-            Some(t) => { dgpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t)); dgpu_row.set_visible(true); }
+            Some(t) => {
+                dgpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t));
+                dgpu_row.set_visible(true);
+            }
             None => dgpu_row.set_visible(false),
         }
         match dgpu_pwr {
-            Some(w) => { dgpu_power_l.set_text(&format!("{:.1} W", w)); dgpu_power_l.set_visible(true); }
+            Some(w) => {
+                dgpu_power_l.set_text(&format!("{:.1} W", w));
+                dgpu_power_l.set_visible(true);
+            }
             None => dgpu_power_l.set_visible(false),
         }
         match dgpu_util {
-            Some(u) => { dgpu_util_l.set_text(&format!("{}%", u)); dgpu_util_l.set_visible(true); dgpu_dot.set_visible(dgpu_pwr.is_some()); }
-            None => { dgpu_util_l.set_visible(false); dgpu_dot.set_visible(false); }
+            Some(u) => {
+                dgpu_util_l.set_text(&format!("{}%", u));
+                dgpu_util_l.set_visible(true);
+                dgpu_dot.set_visible(dgpu_pwr.is_some());
+            }
+            None => {
+                dgpu_util_l.set_visible(false);
+                dgpu_dot.set_visible(false);
+            }
         }
 
         // Battery + Fan bottom row
@@ -816,8 +871,14 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
         }
 
         match fan {
-            Some(0) => { fan_l.set_text("Fan: Auto"); fan_l.set_visible(true); }
-            Some(rpm) => { fan_l.set_text(&format!("Fan: {} RPM", rpm)); fan_l.set_visible(true); }
+            Some(0) => {
+                fan_l.set_text("Fan: Auto");
+                fan_l.set_visible(true);
+            }
+            Some(rpm) => {
+                fan_l.set_text(&format!("Fan: {} RPM", rpm));
+                fan_l.set_visible(true);
+            }
             None => fan_l.set_visible(false),
         }
 
@@ -867,7 +928,7 @@ fn show_first_run_donation_dialog(window: &adw::ApplicationWindow) {
             I develop this application in my free time to support the Linux community. \
             If it helps you, please consider making a small donation.\n\n\
             Your support helps me acquire more Razer devices for testing and verification, \
-            making the experience better for everyone!"
+            making the experience better for everyone!",
         )
         .build();
 
@@ -887,7 +948,6 @@ fn show_first_run_donation_dialog(window: &adw::ApplicationWindow) {
 
     dialog.present(Some(window));
 }
-
 
 fn main() {
     setup_panic_hook();
@@ -1080,7 +1140,7 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
 
     let power_combo = make_combo_row(
         "Profile",
-        &profile_description(power.map_or(0, |p| p.0 as u32)),
+        profile_description(power.map_or(0, |p| p.0 as u32)),
         &["Balanced", "Gaming", "Creator", "Silent", "Custom"],
         power.map_or(0, |p| p.0 as u32),
     );
@@ -1107,7 +1167,7 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
     );
     power_section.add_row(&gpu_combo);
 
-    let show_boost = power.map_or(false, |p| p.0 == 4);
+    let show_boost = power.is_some_and(|p| p.0 == 4);
     cpu_combo.set_visible(show_boost);
     gpu_combo.set_visible(show_boost);
 
@@ -1129,8 +1189,14 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
     let fan_slider = SliderRow::new(
         "Fan Speed (RPM)",
         "Manual cooling performance",
-        min_fan_speed, max_fan_speed, 100.0,
-        if auto { min_fan_speed } else { fan_speed as f64 },
+        min_fan_speed,
+        max_fan_speed,
+        100.0,
+        if auto {
+            min_fan_speed
+        } else {
+            fan_speed as f64
+        },
     );
     fan_slider.add_mark(min_fan_speed, Some("Min"));
     fan_slider.add_mark(max_fan_speed, Some("Max"));
@@ -1177,26 +1243,26 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
     // Toggle callback — hook the actual toggle buttons to refresh page state
     {
         let first_child = toggle_box.first_child();
-        if let Some(ac_btn) = first_child {
-            if let Ok(tb) = ac_btn.downcast::<gtk::ToggleButton>() {
-                let refresh = refresh.clone();
-                tb.connect_toggled(move |btn| {
-                    if btn.is_active() {
-                        refresh();
-                    }
-                });
-            }
+        if let Some(ac_btn) = first_child
+            && let Ok(tb) = ac_btn.downcast::<gtk::ToggleButton>()
+        {
+            let refresh = refresh.clone();
+            tb.connect_toggled(move |btn| {
+                if btn.is_active() {
+                    refresh();
+                }
+            });
         }
         let last_child = toggle_box.last_child();
-        if let Some(bat_btn) = last_child {
-            if let Ok(tb) = bat_btn.downcast::<gtk::ToggleButton>() {
-                let refresh = refresh.clone();
-                tb.connect_toggled(move |btn| {
-                    if btn.is_active() {
-                        refresh();
-                    }
-                });
-            }
+        if let Some(bat_btn) = last_child
+            && let Ok(tb) = bat_btn.downcast::<gtk::ToggleButton>()
+        {
+            let refresh = refresh.clone();
+            tb.connect_toggled(move |btn| {
+                if btn.is_active() {
+                    refresh();
+                }
+            });
         }
     }
 
@@ -1207,9 +1273,14 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let cpu_combo = cpu_combo.clone();
         let gpu_combo = gpu_combo.clone();
         power_combo.connect_selected_notify(glib::clone!(
-            #[weak] cpu_combo, #[weak] gpu_combo,
+            #[weak]
+            cpu_combo,
+            #[weak]
+            gpu_combo,
             move |pp| {
-                if refreshing.get() { return; }
+                if refreshing.get() {
+                    return;
+                }
                 let ac = is_ac.get();
                 let profile = pp.selected() as u8;
                 let cpu = cpu_combo.selected() as u8;
@@ -1229,9 +1300,14 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let power_combo = power_combo.clone();
         let gpu_combo = gpu_combo.clone();
         cpu_combo.connect_selected_notify(glib::clone!(
-            #[weak] power_combo, #[weak] gpu_combo,
+            #[weak]
+            power_combo,
+            #[weak]
+            gpu_combo,
             move |cb| {
-                if refreshing.get() { return; }
+                if refreshing.get() {
+                    return;
+                }
                 let ac = is_ac.get();
                 let profile = power_combo.selected() as u8;
                 let cpu = cb.selected() as u8;
@@ -1247,9 +1323,14 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let power_combo = power_combo.clone();
         let cpu_combo = cpu_combo.clone();
         gpu_combo.connect_selected_notify(glib::clone!(
-            #[weak] power_combo, #[weak] cpu_combo,
+            #[weak]
+            power_combo,
+            #[weak]
+            cpu_combo,
             move |gb| {
-                if refreshing.get() { return; }
+                if refreshing.get() {
+                    return;
+                }
                 let ac = is_ac.get();
                 let profile = power_combo.selected() as u8;
                 let cpu = cpu_combo.selected() as u8;
@@ -1265,7 +1346,9 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let refreshing = refreshing.clone();
         let fan_switch_ref = fan_switch.clone();
         fan_slider.scale.connect_value_changed(move |sc| {
-            if refreshing.get() { return; }
+            if refreshing.get() {
+                return;
+            }
             let ac = is_ac.get();
             let value = sc.value();
             set_fan_speed(ac, value as i32);
@@ -1278,9 +1361,12 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let refreshing_ref = refreshing.clone();
         let scale_ref = fan_slider.scale.clone();
         fan_switch.connect_active_notify(glib::clone!(
-            #[weak] scale_ref,
+            #[weak]
+            scale_ref,
             move |sw| {
-                if refreshing_ref.get() { return; }
+                if refreshing_ref.get() {
+                    return;
+                }
                 let ac = is_ac.get();
                 let state = sw.is_active();
                 if state {
@@ -1304,14 +1390,23 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
     // --- Detected GPUs ---
     let gpu_section = settings_page.add_section(Some("Detected GPUs"));
     let gpu_rows: Vec<adw::ActionRow> = if let Some((ref gpus, _, _, _)) = gpu_status {
-        gpus.iter().map(|gpu| {
-            let row = adw::ActionRow::new();
-            row.set_title(&gpu.name);
-            let type_label = if gpu.gpu_type == "dgpu" { "Discrete" } else { "Integrated" };
-            row.set_subtitle(&format!("{} \u{00B7} {} \u{00B7} {} \u{00B7} {}", type_label, gpu.pci_slot, gpu.driver, gpu.runtime_status));
-            gpu_section.add_row(&row);
-            row
-        }).collect()
+        gpus.iter()
+            .map(|gpu| {
+                let row = adw::ActionRow::new();
+                row.set_title(&gpu.name);
+                let type_label = if gpu.gpu_type == "dgpu" {
+                    "Discrete"
+                } else {
+                    "Integrated"
+                };
+                row.set_subtitle(&format!(
+                    "{} \u{00B7} {} \u{00B7} {} \u{00B7} {}",
+                    type_label, gpu.pci_slot, gpu.driver, gpu.runtime_status
+                ));
+                gpu_section.add_row(&row);
+                row
+            })
+            .collect()
     } else {
         let row = adw::ActionRow::new();
         row.set_title("No GPUs detected");
@@ -1321,8 +1416,10 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
     };
 
     // --- dGPU Runtime Power ---
-    let has_dgpu = gpu_status.as_ref().map_or(false, |(gpus, _, _, _)| gpus.iter().any(|g| g.gpu_type == "dgpu"));
-    let dgpu_rpm_active = gpu_status.as_ref().map_or(false, |(_, rpm, _, _)| *rpm);
+    let has_dgpu = gpu_status
+        .as_ref()
+        .is_some_and(|(gpus, _, _, _)| gpus.iter().any(|g| g.gpu_type == "dgpu"));
+    let dgpu_rpm_active = gpu_status.as_ref().is_some_and(|(_, rpm, _, _)| *rpm);
 
     let rpm_section = settings_page.add_section(Some("dGPU Runtime Power"));
     let rpm_switch = make_switch_row(
@@ -1342,7 +1439,9 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         let gpu_refreshing = gpu_refreshing.clone();
         let gpu_cooldown = gpu_cooldown.clone();
         rpm_switch.connect_active_notify(move |sw| {
-            if gpu_refreshing.get() { return; }
+            if gpu_refreshing.get() {
+                return;
+            }
             set_dgpu_runtime_pm(sw.is_active());
             // Set cooldown so the live-sync skips the next few polls
             gpu_cooldown.set(true);
@@ -1354,8 +1453,10 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
     }
 
     // --- envycontrol GPU Mode ---
-    let ec_available = gpu_status.as_ref().map_or(false, |(_, _, _, avail)| *avail);
-    let ec_mode = gpu_status.as_ref().map_or("unknown".to_string(), |(_, _, mode, _)| mode.clone());
+    let ec_available = gpu_status.as_ref().is_some_and(|(_, _, _, avail)| *avail);
+    let ec_mode = gpu_status
+        .as_ref()
+        .map_or("unknown".to_string(), |(_, _, mode, _)| mode.clone());
 
     let ec_section = settings_page.add_section(Some("GPU Mode (envycontrol)"));
 
@@ -1369,7 +1470,7 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
 
         let mode_combo = make_combo_row(
             "GPU Mode",
-            &gpu_mode_description(mode_idx),
+            gpu_mode_description(mode_idx),
             &["Hybrid", "Integrated", "NVIDIA Only"],
             mode_idx,
         );
@@ -1389,16 +1490,18 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
         {
             let mode_combo = mode_combo.clone();
             let gpu_refreshing = gpu_refreshing.clone();
-            
-            // Capture a weak reference or solve the root access differently. 
-            // We can't capture the widget itself and use it easily if we also clone it? 
+
+            // Capture a weak reference or solve the root access differently.
+            // We can't capture the widget itself and use it easily if we also clone it?
             // construct logic inside.
-            
+
             mode_combo.clone().connect_selected_notify(move |c| {
                 // Update subtitle
                 c.set_subtitle(gpu_mode_description(c.selected()));
 
-                if gpu_refreshing.get() { return; }
+                if gpu_refreshing.get() {
+                    return;
+                }
 
                 let mode_str = match c.selected() {
                     0 => "hybrid",
@@ -1409,7 +1512,8 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
                 let mode_owned = mode_str.to_string();
 
                 // Attempt to find toast overlay
-                let overlay_ref: Option<adw::ToastOverlay> = c.root()
+                let overlay_ref: Option<adw::ToastOverlay> = c
+                    .root()
                     .and_then(|r| r.downcast::<adw::ApplicationWindow>().ok())
                     .and_then(|w| w.content())
                     .and_then(|c| c.downcast::<adw::ToastOverlay>().ok());
@@ -1420,14 +1524,8 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
                         format!("GPU mode set to '{}' \u{2014} log out to apply", mode_owned),
                         3,
                     ),
-                    Some((false, msg)) => (
-                        format!("Failed: {}", msg),
-                        4,
-                    ),
-                    None => (
-                        "Failed to communicate with daemon".to_string(),
-                        4,
-                    ),
+                    Some((false, msg)) => (format!("Failed: {}", msg), 4),
+                    None => ("Failed to communicate with daemon".to_string(), 4),
                 };
 
                 // Show toast
@@ -1442,7 +1540,9 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
             });
         }
     } else {
-        let info_label = gtk::Label::new(Some("envycontrol is not installed. Install it for persistent GPU mode switching."));
+        let info_label = gtk::Label::new(Some(
+            "envycontrol is not installed. Install it for persistent GPU mode switching.",
+        ));
         info_label.set_wrap(true);
         info_label.add_css_class("dim-label");
         info_label.set_margin_top(12);
@@ -1466,18 +1566,25 @@ fn make_performance_page(device: SupportedDevice) -> SettingsPage {
             refresh();
 
             // GPU refresh (skip if user just toggled the switch)
-            if !gpu_cooldown.get() {
-                if let Some((gpus, dgpu_rpm, _, _)) = get_gpu_status() {
-                    gpu_refreshing.set(true);
-                    rpm_switch.set_active(dgpu_rpm);
-                    for (i, row) in gpu_rows.iter().enumerate() {
-                        if let Some(gpu) = gpus.get(i) {
-                            let type_label = if gpu.gpu_type == "dgpu" { "Discrete" } else { "Integrated" };
-                            row.set_subtitle(&format!("{} \u{00B7} {} \u{00B7} {} \u{00B7} {}", type_label, gpu.pci_slot, gpu.driver, gpu.runtime_status));
-                        }
+            if !gpu_cooldown.get()
+                && let Some((gpus, dgpu_rpm, _, _)) = get_gpu_status()
+            {
+                gpu_refreshing.set(true);
+                rpm_switch.set_active(dgpu_rpm);
+                for (i, row) in gpu_rows.iter().enumerate() {
+                    if let Some(gpu) = gpus.get(i) {
+                        let type_label = if gpu.gpu_type == "dgpu" {
+                            "Discrete"
+                        } else {
+                            "Integrated"
+                        };
+                        row.set_subtitle(&format!(
+                            "{} \u{00B7} {} \u{00B7} {} \u{00B7} {}",
+                            type_label, gpu.pci_slot, gpu.driver, gpu.runtime_status
+                        ));
                     }
-                    gpu_refreshing.set(false);
                 }
+                gpu_refreshing.set(false);
             }
 
             glib::ControlFlow::Continue
@@ -1510,7 +1617,9 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
     let brightness_slider = SliderRow::new(
         "Brightness Level",
         "Adjust keyboard backlight intensity",
-        0.0, 100.0, 1.0,
+        0.0,
+        100.0,
+        1.0,
         brightness as f64,
     );
     brightness_slider.add_mark(0.0, Some("Off"));
@@ -1618,27 +1727,28 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
 
             let ok = match effect_ref.selected() {
                 0 => set_effect("static", vec![red, green, blue]),
-                1 => set_effect("static_gradient", vec![red, green, blue, red2, green2, blue2]),
+                1 => set_effect(
+                    "static_gradient",
+                    vec![red, green, blue, red2, green2, blue2],
+                ),
                 2 => set_effect("wave_gradient", vec![red, green, blue, red2, green2, blue2]),
                 3 => set_effect("breathing_single", vec![red, green, blue, 10]),
                 _ => None,
             };
 
             // Show toast feedback
-            if let Some(root) = btn.root() {
-                if let Some(window) = root.downcast_ref::<adw::ApplicationWindow>() {
-                    if let Some(child) = window.content() {
-                        if let Ok(overlay) = child.downcast::<adw::ToastOverlay>() {
-                            let toast = if ok == Some(true) {
-                                adw::Toast::new("Effect applied")
-                            } else {
-                                adw::Toast::new("Failed to apply effect")
-                            };
-                            toast.set_timeout(2);
-                            overlay.add_toast(toast);
-                        }
-                    }
-                }
+            if let Some(root) = btn.root()
+                && let Some(window) = root.downcast_ref::<adw::ApplicationWindow>()
+                && let Some(child) = window.content()
+                && let Ok(overlay) = child.downcast::<adw::ToastOverlay>()
+            {
+                let toast = if ok == Some(true) {
+                    adw::Toast::new("Effect applied")
+                } else {
+                    adw::Toast::new("Failed to apply effect")
+                };
+                toast.set_timeout(2);
+                overlay.add_toast(toast);
             }
         });
     }
@@ -1666,26 +1776,26 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
     // Hook toggle buttons for refresh
     {
         let first_child = toggle_box.first_child();
-        if let Some(ac_btn) = first_child {
-            if let Ok(tb) = ac_btn.downcast::<gtk::ToggleButton>() {
-                let refresh = refresh.clone();
-                tb.connect_toggled(move |btn| {
-                    if btn.is_active() {
-                        refresh();
-                    }
-                });
-            }
+        if let Some(ac_btn) = first_child
+            && let Ok(tb) = ac_btn.downcast::<gtk::ToggleButton>()
+        {
+            let refresh = refresh.clone();
+            tb.connect_toggled(move |btn| {
+                if btn.is_active() {
+                    refresh();
+                }
+            });
         }
         let last_child = toggle_box.last_child();
-        if let Some(bat_btn) = last_child {
-            if let Ok(tb) = bat_btn.downcast::<gtk::ToggleButton>() {
-                let refresh = refresh.clone();
-                tb.connect_toggled(move |btn| {
-                    if btn.is_active() {
-                        refresh();
-                    }
-                });
-            }
+        if let Some(bat_btn) = last_child
+            && let Ok(tb) = bat_btn.downcast::<gtk::ToggleButton>()
+        {
+            let refresh = refresh.clone();
+            tb.connect_toggled(move |btn| {
+                if btn.is_active() {
+                    refresh();
+                }
+            });
         }
     }
 
@@ -1694,7 +1804,9 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
         let is_ac = is_ac.clone();
         let refreshing = refreshing.clone();
         brightness_slider.scale.connect_value_changed(move |sc| {
-            if refreshing.get() { return; }
+            if refreshing.get() {
+                return;
+            }
             let ac = is_ac.get();
             set_brightness(ac, sc.value() as u8);
         });
@@ -1705,7 +1817,9 @@ fn make_lighting_page(device: SupportedDevice) -> SettingsPage {
         let is_ac = is_ac.clone();
         let refreshing = refreshing.clone();
         lc.connect_selected_notify(move |c| {
-            if refreshing.get() { return; }
+            if refreshing.get() {
+                return;
+            }
             let ac = is_ac.get();
             let logo = c.selected() as u8;
             set_logo(ac, logo);
@@ -1747,7 +1861,9 @@ fn make_battery_page() -> SettingsPage {
         let bho_slider = SliderRow::new(
             "Charge Limit",
             "Maximum battery charge level (%)",
-            50.0, 80.0, 5.0,
+            50.0,
+            80.0,
+            5.0,
             bho.1 as f64,
         );
         bho_slider.add_mark(50.0, Some("50%"));
@@ -1760,7 +1876,9 @@ fn make_battery_page() -> SettingsPage {
             let bho_switch_ref = bho_switch.clone();
             let refreshing = refreshing.clone();
             bho_slider.scale.connect_value_changed(move |sc| {
-                if refreshing.get() { return; }
+                if refreshing.get() {
+                    return;
+                }
                 let is_on = bho_switch_ref.is_active();
                 let threshold = sc.value() as u8;
                 set_bho(is_on, threshold);
@@ -1771,9 +1889,12 @@ fn make_battery_page() -> SettingsPage {
             let refreshing = refreshing.clone();
             let scale_ref = bho_slider.scale.clone();
             bho_switch.connect_active_notify(glib::clone!(
-                #[weak] scale_ref,
+                #[weak]
+                scale_ref,
                 move |sw| {
-                    if refreshing.get() { return; }
+                    if refreshing.get() {
+                        return;
+                    }
                     let state = sw.is_active();
                     let threshold = scale_ref.value() as u8;
                     set_bho(state, threshold);
@@ -1801,7 +1922,9 @@ fn make_battery_page() -> SettingsPage {
         let status = adw::StatusPage::new();
         status.set_icon_name(Some("battery-symbolic"));
         status.set_title("Not Available");
-        status.set_description(Some("Battery health optimizer is not supported on this device."));
+        status.set_description(Some(
+            "Battery health optimizer is not supported on this device.",
+        ));
         page.page.add(&adw::PreferencesGroup::new());
         let section = page.add_section(None);
         section.add_row(&status);
@@ -1809,8 +1932,6 @@ fn make_battery_page() -> SettingsPage {
 
     page
 }
-
-
 
 fn gpu_mode_description(index: u32) -> &'static str {
     match index {
@@ -1869,23 +1990,43 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
         glib::timeout_add_local_once(Duration::from_millis(100), move || {
             let current = env!("CARGO_PKG_VERSION");
             let msg = match std::process::Command::new("curl")
-                .args(["-sf", "--max-time", "10", "https://api.github.com/repos/encomjp/razer-control-revived/releases/latest"])
+                .args([
+                    "-sf",
+                    "--max-time",
+                    "10",
+                    "https://api.github.com/repos/encomjp/razer-control-revived/releases/latest",
+                ])
                 .output()
             {
                 Ok(output) => {
                     let body = String::from_utf8_lossy(&output.stdout);
                     // GitHub API returns `"tag_name": "v0.x.x"` with spaces -- strip whitespace before parsing
                     let body_clean = body.replace(" ", "").replace("\n", "");
-                    if let Some(tag) = body_clean.split("\"tag_name\":\"").nth(1).and_then(|s| s.split('"').next()) {
+                    if let Some(tag) = body_clean
+                        .split("\"tag_name\":\"")
+                        .nth(1)
+                        .and_then(|s| s.split('"').next())
+                    {
                         let remote = tag.trim_start_matches('v');
                         let local = current.trim_start_matches('v');
                         if remote != local {
-                            let r: Vec<u32> = remote.split('.').filter_map(|x| x.parse().ok()).collect();
-                            let l: Vec<u32> = local.split('.').filter_map(|x| x.parse().ok()).collect();
-                            let newer = r.iter().zip(l.iter()).fold(std::cmp::Ordering::Equal, |acc, (a, b)| {
-                                if acc != std::cmp::Ordering::Equal { acc } else { a.cmp(b) }
-                            });
-                            if newer == std::cmp::Ordering::Greater || (newer == std::cmp::Ordering::Equal && r.len() > l.len()) {
+                            let r: Vec<u32> =
+                                remote.split('.').filter_map(|x| x.parse().ok()).collect();
+                            let l: Vec<u32> =
+                                local.split('.').filter_map(|x| x.parse().ok()).collect();
+                            let newer = r.iter().zip(l.iter()).fold(
+                                std::cmp::Ordering::Equal,
+                                |acc, (a, b)| {
+                                    if acc != std::cmp::Ordering::Equal {
+                                        acc
+                                    } else {
+                                        a.cmp(b)
+                                    }
+                                },
+                            );
+                            if newer == std::cmp::Ordering::Greater
+                                || (newer == std::cmp::Ordering::Equal && r.len() > l.len())
+                            {
                                 format!("Update available: v{}", remote)
                             } else {
                                 "You're up to date!".to_string()
@@ -1944,7 +2085,7 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
 
     let support_desc = gtk::Label::new(Some(
         "If you find this project useful, consider supporting development.\n\
-        Your contribution helps add support for more Razer laptop models!"
+        Your contribution helps add support for more Razer laptop models!",
     ));
     support_desc.set_wrap(true);
     support_desc.set_justify(gtk::Justification::Center);
@@ -1975,7 +2116,7 @@ fn make_about_page(device: SupportedDevice) -> SettingsPage {
         Manage power profiles, fan speeds, keyboard lighting, and more.\n\n\
         \u{26A0}\u{FE0F} Tested on: Fedora Linux\n\
         Should work on Ubuntu and similar distributions.\n\
-        If issues occur, please report them on GitHub."
+        If issues occur, please report them on GitHub.",
     ));
     description.set_wrap(true);
     description.set_justify(gtk::Justification::Center);

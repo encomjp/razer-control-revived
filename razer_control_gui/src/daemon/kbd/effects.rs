@@ -25,18 +25,18 @@ impl Effect for Static {
             kbd,
             args: [r, g, b],
         };
-        return Box::new(s);
+        Box::new(s)
     }
 
     fn update(&mut self) -> board::KeyboardData {
-        return self.kbd;
+        self.kbd
     }
 
     fn get_name() -> &'static str
     where
         Self: Sized,
     {
-        return "Static";
+        "Static"
     }
 
     fn get_varargs(&mut self) -> &[u8] {
@@ -44,7 +44,7 @@ impl Effect for Static {
     }
 
     fn clone_box(&self) -> Box<dyn Effect> {
-        return Box::new(*self);
+        Box::new(*self)
     }
 
     fn save(&mut self) -> EffectSave {
@@ -77,8 +77,12 @@ impl Effect for StaticGradient {
     {
         let mut kbd = board::KeyboardData::new();
         let args: [u8; 6] = [
-            *args.get(0).unwrap_or(&0), *args.get(1).unwrap_or(&0), *args.get(2).unwrap_or(&0),
-            *args.get(3).unwrap_or(&0), *args.get(4).unwrap_or(&0), *args.get(5).unwrap_or(&0),
+            *args.get(0).unwrap_or(&0),
+            *args.get(1).unwrap_or(&0),
+            *args.get(2).unwrap_or(&0),
+            *args.get(3).unwrap_or(&0),
+            *args.get(4).unwrap_or(&0),
+            *args.get(5).unwrap_or(&0),
         ];
         let mut c1 = board::AnimatorKeyColour::new_u(args[0], args[1], args[2]);
         let c2 = board::AnimatorKeyColour::new_u(args[3], args[4], args[5]);
@@ -104,11 +108,11 @@ impl Effect for StaticGradient {
     }
 
     fn get_varargs(&mut self) -> &[u8] {
-        return &self.args;
+        &self.args
     }
 
     fn clone_box(&self) -> Box<dyn Effect> {
-        return Box::new(*self);
+        Box::new(*self)
     }
 
     fn save(&mut self) -> EffectSave {
@@ -127,7 +131,6 @@ impl Effect for StaticGradient {
 /// STATIC_BLEND KEYBOARD EFFECT
 /// 2 colours forming a gradient, animated across the keyboard
 ///
-
 pub struct WaveGradient {
     kbd: board::KeyboardData,
     args: [u8; 6],
@@ -140,8 +143,12 @@ impl Effect for WaveGradient {
         Self: Sized,
     {
         let args: [u8; 6] = [
-            *args.get(0).unwrap_or(&0), *args.get(1).unwrap_or(&0), *args.get(2).unwrap_or(&0),
-            *args.get(3).unwrap_or(&0), *args.get(4).unwrap_or(&0), *args.get(5).unwrap_or(&0),
+            *args.get(0).unwrap_or(&0),
+            *args.get(1).unwrap_or(&0),
+            *args.get(2).unwrap_or(&0),
+            *args.get(3).unwrap_or(&0),
+            *args.get(4).unwrap_or(&0),
+            *args.get(5).unwrap_or(&0),
         ];
         let mut wave = WaveGradient {
             kbd: board::KeyboardData::new(),
@@ -179,11 +186,11 @@ impl Effect for WaveGradient {
     }
 
     fn get_varargs(&mut self) -> &[u8] {
-        return &self.args;
+        &self.args
     }
 
     fn clone_box(&self) -> Box<dyn Effect> {
-        return Box::new(self.clone());
+        Box::new(self.clone())
     }
 
     fn save(&mut self) -> EffectSave {
@@ -242,9 +249,9 @@ impl Effect for BreathSingle {
             target_colour: board::AnimatorKeyColour::new_u(r, g, b),
             current_colour: board::AnimatorKeyColour::new_u(0, 0, 0),
             animator_step_colour: board::AnimatorKeyColour::new_f(
-                r as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
-                g as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
-                b as f32 / (cycle_duration_ms as f32 / ANIMATION_SLEEP_MS as f32) as f32,
+                r as f32 / (cycle_duration_ms / ANIMATION_SLEEP_MS as f32),
+                g as f32 / (cycle_duration_ms / ANIMATION_SLEEP_MS as f32),
+                b as f32 / (cycle_duration_ms / ANIMATION_SLEEP_MS as f32),
             ),
         })
     }
@@ -284,7 +291,7 @@ impl Effect for BreathSingle {
         }
         let col = self.current_colour.get_clamped_colour();
         self.kbd.set_kbd_colour(col.red, col.green, col.blue); // Cast back to u8
-        return self.kbd;
+        self.kbd
     }
 
     fn get_name() -> &'static str
@@ -295,11 +302,11 @@ impl Effect for BreathSingle {
     }
 
     fn get_varargs(&mut self) -> &[u8] {
-        return &self.args;
+        &self.args
     }
 
     fn clone_box(&self) -> Box<dyn Effect> {
-        return Box::new(*self);
+        Box::new(*self)
     }
 
     fn save(&mut self) -> EffectSave {

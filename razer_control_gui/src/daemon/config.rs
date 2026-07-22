@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::{fs, fs::File, io, env};
 use std::io::prelude::*;
+use std::{env, fs, fs::File, io};
 
 const SETTINGS_FILE: &str = "/.local/share/razercontrol/daemon.json";
 const EFFECTS_FILE: &str = "/.local/share/razercontrol/effects.json";
@@ -19,7 +19,7 @@ pub struct PowerConfig {
 
 impl PowerConfig {
     pub fn new() -> PowerConfig {
-        return PowerConfig{
+        PowerConfig {
             power_mode: 0,
             cpu_boost: 1,
             gpu_boost: 0,
@@ -35,7 +35,7 @@ impl PowerConfig {
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {
     pub power: [PowerConfig; 2],
-    pub sync: bool, // sync light settings between ac and battery
+    pub sync: bool,    // sync light settings between ac and battery
     pub no_light: f64, // no light bellow this percentage of battery
     pub standard_effect: u8,
     pub standard_effect_params: Vec<u8>,
@@ -49,11 +49,13 @@ pub struct Configuration {
     pub gui_effect_params: Vec<u8>, // GUI effect color params (RGB bytes)
 }
 
-fn default_bho_threshold() -> u8 { 80 }
+fn default_bho_threshold() -> u8 {
+    80
+}
 
 impl Configuration {
     pub fn new() -> Configuration {
-        return Configuration {
+        Configuration {
             power: [PowerConfig::new(), PowerConfig::new()],
             sync: false,
             no_light: 0.0,
@@ -63,7 +65,7 @@ impl Configuration {
             bho_threshold: 80,
             gui_effect: 0,
             gui_effect_params: vec![],
-        };
+        }
     }
 
     pub fn write_to_file(&mut self) -> io::Result<()> {

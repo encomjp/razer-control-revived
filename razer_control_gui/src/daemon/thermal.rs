@@ -9,6 +9,8 @@
 //! the physical unit (2026-07-13). Hyperboost is AC-only and its UIs note
 //! that Razer pairs it with the cooling pad.
 
+#![allow(dead_code)]
+
 pub const BLADE_16_2025_PID: u16 = 0x02c6;
 
 /// Check whether a device PID string (as stored in laptops.json, e.g. "02C6")
@@ -16,8 +18,7 @@ pub const BLADE_16_2025_PID: u16 = 0x02c6;
 /// validates. The daemon must call this before using any function in this
 /// module; non-matching devices must continue using the generic code paths.
 pub fn is_supported_pid(pid: &str) -> bool {
-    u16::from_str_radix(pid.trim(), 16)
-        .is_ok_and(|p| p == BLADE_16_2025_PID)
+    u16::from_str_radix(pid.trim(), 16).is_ok_and(|p| p == BLADE_16_2025_PID)
 }
 
 /// EC fan zones as carried in the fan-ID byte of every 0x0d thermal command.

@@ -55,9 +55,15 @@ impl SensorState {
         // CPU: merge temp, power, util into one line
         {
             let mut parts: Vec<String> = Vec::new();
-            if let Some(t) = self.cpu_temp { parts.push(format!("{:.0}\u{00B0}C", t)); }
-            if let Some(w) = self.system_power { parts.push(format!("{:.1}W", w)); }
-            if let Some(u) = self.cpu_util { parts.push(format!("{}%", u)); }
+            if let Some(t) = self.cpu_temp {
+                parts.push(format!("{:.0}\u{00B0}C", t));
+            }
+            if let Some(w) = self.system_power {
+                parts.push(format!("{:.1}W", w));
+            }
+            if let Some(u) = self.cpu_util {
+                parts.push(format!("{}%", u));
+            }
             if !parts.is_empty() {
                 lines.push(format!("CPU: {}", parts.join(" \u{00B7} ")));
             }
@@ -66,9 +72,15 @@ impl SensorState {
         // iGPU: merge temp, power, util
         {
             let mut parts: Vec<String> = Vec::new();
-            if let Some(t) = self.igpu_temp { parts.push(format!("{:.0}\u{00B0}C", t)); }
-            if let Some(w) = self.igpu_power { parts.push(format!("{:.1}W", w)); }
-            if let Some(u) = self.igpu_util { parts.push(format!("{}%", u)); }
+            if let Some(t) = self.igpu_temp {
+                parts.push(format!("{:.0}\u{00B0}C", t));
+            }
+            if let Some(w) = self.igpu_power {
+                parts.push(format!("{:.1}W", w));
+            }
+            if let Some(u) = self.igpu_util {
+                parts.push(format!("{}%", u));
+            }
             if !parts.is_empty() {
                 lines.push(format!("iGPU: {}", parts.join(" \u{00B7} ")));
             }
@@ -77,9 +89,15 @@ impl SensorState {
         // dGPU: merge temp, power, util
         {
             let mut parts: Vec<String> = Vec::new();
-            if let Some(t) = self.dgpu_temp { parts.push(format!("{:.0}\u{00B0}C", t)); }
-            if let Some(w) = self.dgpu_power { parts.push(format!("{:.1}W", w)); }
-            if let Some(u) = self.dgpu_util { parts.push(format!("{}%", u)); }
+            if let Some(t) = self.dgpu_temp {
+                parts.push(format!("{:.0}\u{00B0}C", t));
+            }
+            if let Some(w) = self.dgpu_power {
+                parts.push(format!("{:.1}W", w));
+            }
+            if let Some(u) = self.dgpu_util {
+                parts.push(format!("{}%", u));
+            }
             if !parts.is_empty() {
                 lines.push(format!("dGPU: {}", parts.join(" \u{00B7} ")));
             }
@@ -97,10 +115,10 @@ impl SensorState {
             (Some(true), Some(pct)) => {
                 let mut text = format!("AC / {}%", pct);
                 if let Some(ref status) = self.battery_status {
-                    if let Some(w) = self.battery_power {
-                        if status == "Charging" {
-                            text = format!("AC / {}% +{:.1}W", pct, w);
-                        }
+                    if let Some(w) = self.battery_power
+                        && status == "Charging"
+                    {
+                        text = format!("AC / {}% +{:.1}W", pct, w);
                     }
                     if status == "Not charging" {
                         text = format!("AC / {}% (Limit)", pct);
@@ -188,10 +206,14 @@ impl ksni::Tray for RazerTray {
                     // rather than spawning a duplicate process with a second tray.
                     let _ = std::process::Command::new("gdbus")
                         .args([
-                            "call", "--session",
-                            "--dest", "com.encomjp.razer-settings",
-                            "--object-path", "/com/encomjp/razer_settings",
-                            "--method", "org.gtk.Application.Activate",
+                            "call",
+                            "--session",
+                            "--dest",
+                            "com.encomjp.razer-settings",
+                            "--object-path",
+                            "/com/encomjp/razer_settings",
+                            "--method",
+                            "org.gtk.Application.Activate",
                             "[]",
                         ])
                         .spawn();
@@ -220,20 +242,23 @@ fn read_cpu_temp() -> Option<f64> {
                 let name = name.trim();
                 if name == "k10temp" || name == "zenpower" || name == "coretemp" {
                     let temp_path = entry.path().join("temp1_input");
-                    if let Ok(content) = fs::read_to_string(&temp_path) {
-                        if let Ok(temp) = content.trim().parse::<f64>() {
-                            return Some(temp / 1000.0);
-                        }
+                    if let Ok(content) = fs::read_to_string(&temp_path)
+                        && let Ok(temp) = content.trim().parse::<f64>()
+                    {
+                        return Some(temp / 1000.0);
                     }
                 }
             }
         }
     }
-    for path in ["/sys/class/thermal/thermal_zone0/temp", "/sys/class/thermal/thermal_zone1/temp"] {
-        if let Ok(content) = fs::read_to_string(path) {
-            if let Ok(temp) = content.trim().parse::<f64>() {
-                return Some(temp / 1000.0);
-            }
+    for path in [
+        "/sys/class/thermal/thermal_zone0/temp",
+        "/sys/class/thermal/thermal_zone1/temp",
+    ] {
+        if let Ok(content) = fs::read_to_string(path)
+            && let Ok(temp) = content.trim().parse::<f64>()
+        {
+            return Some(temp / 1000.0);
         }
     }
     None
@@ -243,15 +268,15 @@ fn read_igpu_temp() -> Option<f64> {
     if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
         for entry in entries.flatten() {
             let name_path = entry.path().join("name");
-            if let Ok(name) = fs::read_to_string(&name_path) {
-                if name.trim() == "amdgpu" {
-                    for f in ["temp1_input", "temp2_input"] {
-                        let p = entry.path().join(f);
-                        if let Ok(c) = fs::read_to_string(&p) {
-                            if let Ok(t) = c.trim().parse::<f64>() {
-                                return Some(t / 1000.0);
-                            }
-                        }
+            if let Ok(name) = fs::read_to_string(&name_path)
+                && name.trim() == "amdgpu"
+            {
+                for f in ["temp1_input", "temp2_input"] {
+                    let p = entry.path().join(f);
+                    if let Ok(c) = fs::read_to_string(&p)
+                        && let Ok(t) = c.trim().parse::<f64>()
+                    {
+                        return Some(t / 1000.0);
                     }
                 }
             }
@@ -262,16 +287,16 @@ fn read_igpu_temp() -> Option<f64> {
 
 fn read_dgpu_temp() -> Option<f64> {
     if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args(["--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"])
+        .args([
+            "--query-gpu=temperature.gpu",
+            "--format=csv,noheader,nounits",
+        ])
         .output()
+        && output.status.success()
+        && let Ok(s) = String::from_utf8(output.stdout)
+        && let Ok(t) = s.trim().parse::<f64>()
     {
-        if output.status.success() {
-            if let Ok(s) = String::from_utf8(output.stdout) {
-                if let Ok(t) = s.trim().parse::<f64>() {
-                    return Some(t);
-                }
-            }
-        }
+        return Some(t);
     }
     None
 }
@@ -289,10 +314,10 @@ fn read_ac_power() -> Option<bool> {
 fn read_battery_pct() -> Option<u8> {
     for bat in ["BAT0", "BAT1"] {
         let path = format!("/sys/class/power_supply/{}/capacity", bat);
-        if let Ok(content) = fs::read_to_string(&path) {
-            if let Ok(pct) = content.trim().parse::<u8>() {
-                return Some(pct);
-            }
+        if let Ok(content) = fs::read_to_string(&path)
+            && let Ok(pct) = content.trim().parse::<u8>()
+        {
+            return Some(pct);
         }
     }
     None
@@ -306,25 +331,25 @@ fn read_system_power() -> Option<f64> {
         "/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj",
     ];
     for path in &paths {
-        if let Ok(content) = fs::read_to_string(path) {
-            if let Ok(energy) = content.trim().parse::<u64>() {
-                use std::sync::atomic::{AtomicU64, Ordering};
-                static LAST_E: AtomicU64 = AtomicU64::new(0);
-                static LAST_T: AtomicU64 = AtomicU64::new(0);
-                let now = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_micros() as u64;
-                let pe = LAST_E.swap(energy, Ordering::Relaxed);
-                let pt = LAST_T.swap(now, Ordering::Relaxed);
-                if pe > 0 && pt > 0 && energy > pe {
-                    let dt = now - pt;
-                    if dt > 0 {
-                        return Some((energy - pe) as f64 / dt as f64);
-                    }
+        if let Ok(content) = fs::read_to_string(path)
+            && let Ok(energy) = content.trim().parse::<u64>()
+        {
+            use std::sync::atomic::{AtomicU64, Ordering};
+            static LAST_E: AtomicU64 = AtomicU64::new(0);
+            static LAST_T: AtomicU64 = AtomicU64::new(0);
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_micros() as u64;
+            let pe = LAST_E.swap(energy, Ordering::Relaxed);
+            let pt = LAST_T.swap(now, Ordering::Relaxed);
+            if pe > 0 && pt > 0 && energy > pe {
+                let dt = now - pt;
+                if dt > 0 {
+                    return Some((energy - pe) as f64 / dt as f64);
                 }
-                return None;
             }
+            return None;
         }
     }
     None
@@ -334,14 +359,11 @@ fn read_dgpu_power() -> Option<f64> {
     if let Ok(output) = std::process::Command::new("nvidia-smi")
         .args(["--query-gpu=power.draw", "--format=csv,noheader,nounits"])
         .output()
+        && output.status.success()
+        && let Ok(s) = String::from_utf8(output.stdout)
+        && let Ok(p) = s.trim().parse::<f64>()
     {
-        if output.status.success() {
-            if let Ok(s) = String::from_utf8(output.stdout) {
-                if let Ok(p) = s.trim().parse::<f64>() {
-                    return Some(p);
-                }
-            }
-        }
+        return Some(p);
     }
     None
 }
@@ -353,14 +375,11 @@ fn read_dgpu_util() -> Option<u32> {
             "--format=csv,noheader,nounits",
         ])
         .output()
+        && output.status.success()
+        && let Ok(s) = String::from_utf8(output.stdout)
+        && let Ok(u) = s.trim().parse::<u32>()
     {
-        if output.status.success() {
-            if let Ok(s) = String::from_utf8(output.stdout) {
-                if let Ok(u) = s.trim().parse::<u32>() {
-                    return Some(u);
-                }
-            }
-        }
+        return Some(u);
     }
     None
 }
@@ -369,14 +388,14 @@ fn read_igpu_power() -> Option<f64> {
     if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
         for entry in entries.flatten() {
             let name_path = entry.path().join("name");
-            if let Ok(name) = fs::read_to_string(&name_path) {
-                if name.trim() == "amdgpu" {
-                    let p = entry.path().join("power1_average");
-                    if let Ok(c) = fs::read_to_string(&p) {
-                        if let Ok(uw) = c.trim().parse::<f64>() {
-                            return Some(uw / 1_000_000.0);
-                        }
-                    }
+            if let Ok(name) = fs::read_to_string(&name_path)
+                && name.trim() == "amdgpu"
+            {
+                let p = entry.path().join("power1_average");
+                if let Ok(c) = fs::read_to_string(&p)
+                    && let Ok(uw) = c.trim().parse::<f64>()
+                {
+                    return Some(uw / 1_000_000.0);
                 }
             }
         }
@@ -387,14 +406,14 @@ fn read_igpu_power() -> Option<f64> {
 fn read_igpu_util() -> Option<u32> {
     for card in ["card0", "card1", "card2"] {
         let busy_path = format!("/sys/class/drm/{}/device/gpu_busy_percent", card);
-        if let Ok(content) = fs::read_to_string(&busy_path) {
-            if let Ok(util) = content.trim().parse::<u32>() {
-                let driver_path = format!("/sys/class/drm/{}/device/driver", card);
-                if let Ok(link) = fs::read_link(&driver_path) {
-                    if link.to_string_lossy().contains("amdgpu") {
-                        return Some(util);
-                    }
-                }
+        if let Ok(content) = fs::read_to_string(&busy_path)
+            && let Ok(util) = content.trim().parse::<u32>()
+        {
+            let driver_path = format!("/sys/class/drm/{}/device/driver", card);
+            if let Ok(link) = fs::read_link(&driver_path)
+                && link.to_string_lossy().contains("amdgpu")
+            {
+                return Some(util);
             }
         }
     }
@@ -418,12 +437,11 @@ fn read_battery_power() -> Option<f64> {
     for bat in ["BAT0", "BAT1"] {
         let c_path = format!("/sys/class/power_supply/{}/current_now", bat);
         let v_path = format!("/sys/class/power_supply/{}/voltage_now", bat);
-        if let (Ok(c_str), Ok(v_str)) = (fs::read_to_string(&c_path), fs::read_to_string(&v_path)) {
-            if let (Ok(c), Ok(v)) = (c_str.trim().parse::<u64>(), v_str.trim().parse::<u64>()) {
-                if c > 0 {
-                    return Some(c as f64 * v as f64 / 1e12);
-                }
-            }
+        if let (Ok(c_str), Ok(v_str)) = (fs::read_to_string(&c_path), fs::read_to_string(&v_path))
+            && let (Ok(c), Ok(v)) = (c_str.trim().parse::<u64>(), v_str.trim().parse::<u64>())
+            && c > 0
+        {
+            return Some(c as f64 * v as f64 / 1e12);
         }
     }
     None
@@ -434,27 +452,25 @@ fn read_cpu_util() -> Option<u32> {
     static LAST_IDLE: AtomicU64 = AtomicU64::new(0);
     static LAST_TOTAL: AtomicU64 = AtomicU64::new(0);
 
-    if let Ok(content) = fs::read_to_string("/proc/stat") {
-        if let Some(line) = content.lines().next() {
-            let fields: Vec<&str> = line.split_whitespace().collect();
-            if fields.len() >= 5 && fields[0] == "cpu" {
-                let mut total: u64 = 0;
-                for f in &fields[1..] {
-                    if let Ok(v) = f.parse::<u64>() {
-                        total += v;
-                    }
+    if let Ok(content) = fs::read_to_string("/proc/stat")
+        && let Some(line) = content.lines().next()
+    {
+        let fields: Vec<&str> = line.split_whitespace().collect();
+        if fields.len() >= 5 && fields[0] == "cpu" {
+            let mut total: u64 = 0;
+            for f in &fields[1..] {
+                if let Ok(v) = f.parse::<u64>() {
+                    total += v;
                 }
-                let idle = fields[4].parse::<u64>().unwrap_or(0);
-                let prev_idle = LAST_IDLE.swap(idle, Ordering::Relaxed);
-                let prev_total = LAST_TOTAL.swap(total, Ordering::Relaxed);
-                if prev_total > 0 {
-                    let d_idle = idle.wrapping_sub(prev_idle);
-                    let d_total = total.wrapping_sub(prev_total);
-                    if d_total > 0 {
-                        return Some(
-                            (100.0 * (1.0 - d_idle as f64 / d_total as f64)).round() as u32
-                        );
-                    }
+            }
+            let idle = fields[4].parse::<u64>().unwrap_or(0);
+            let prev_idle = LAST_IDLE.swap(idle, Ordering::Relaxed);
+            let prev_total = LAST_TOTAL.swap(total, Ordering::Relaxed);
+            if prev_total > 0 {
+                let d_idle = idle.wrapping_sub(prev_idle);
+                let d_total = total.wrapping_sub(prev_total);
+                if d_total > 0 {
+                    return Some((100.0 * (1.0 - d_idle as f64 / d_total as f64)).round() as u32);
                 }
             }
         }

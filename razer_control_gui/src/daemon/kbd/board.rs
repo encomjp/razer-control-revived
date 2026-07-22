@@ -52,7 +52,7 @@ impl AnimatorKeyColour {
         if input < 0.0 {
             input = 0.0
         };
-        return input as u8;
+        input as u8
     }
 
     pub fn divide(&mut self, divisor: f32) -> AnimatorKeyColour {
@@ -125,7 +125,7 @@ impl PartialOrd for AnimatorKeyColour {
         } else if self.red <= other.red && self.blue <= other.blue && self.green <= other.green {
             return Some(Ordering::Less);
         }
-        return None;
+        None
     }
 }
 
@@ -138,13 +138,13 @@ pub struct RowData {
 impl RowData {
     /// Generates an empty keyboard row, with each key being white (FF,FF,FF)
     pub fn new() -> RowData {
-        return RowData {
+        RowData {
             keys: [KeyColour {
                 red: 255,
                 green: 255,
                 blue: 255,
             }; KEYS_PER_ROW],
-        };
+        }
     }
 
     /// Sets key colour within the row
@@ -180,7 +180,7 @@ impl RowData {
             v.push(k.green);
             v.push(k.blue);
         });
-        return v;
+        v
     }
 }
 
@@ -192,24 +192,24 @@ pub struct KeyboardData {
 
 impl KeyboardData {
     pub fn new() -> KeyboardData {
-        return KeyboardData {
+        KeyboardData {
             rows: [RowData::new(); ROWS],
             // brightness: 0,
-        };
+        }
     }
 
     // #[allow(dead_code)]
     // pub fn set_brightness(&mut self, val: u8, laptop: device::RazerLaptop) -> bool {
-        // // driver_sysfs::write_brightness(val)
-        // // laptop.set_brightness(val);
-        // return true;
+    // // driver_sysfs::write_brightness(val)
+    // // laptop.set_brightness(val);
+    // return true;
     // }
 
     // #[allow(dead_code)]
     // pub fn get_brightness(&mut self, laptop: device::RazerLaptop) -> u8 {
-        // // self.brightness = driver_sysfs::read_brightness();
-        // // self.brightness = laptop.get_brightness();
-        // self.brightness
+    // // self.brightness = driver_sysfs::read_brightness();
+    // // self.brightness = laptop.get_brightness();
+    // self.brightness
     // }
 
     pub fn update_kbd(&mut self, laptop: &mut device::RazerLaptop) -> bool {
@@ -217,13 +217,13 @@ impl KeyboardData {
         for idx in 0..ROWS {
             laptop.set_custom_frame_data(idx as u8, self.rows[idx].get_row_data());
         }
-        return true;
+        true
     }
 
     pub fn update_custom_mode(&mut self, laptop: &mut device::RazerLaptop) -> bool {
         // driver_sysfs::write_custom_mode_frame(1)
         // driver_sysfs::write_custom_mode_frame(1)
-        return laptop.set_custom_frame();
+        laptop.set_custom_frame()
     }
 
     /// Sets a specific key in the keyboard matrix to a colour
@@ -279,6 +279,6 @@ impl KeyboardData {
         for row in self.rows.iter_mut() {
             all_vals.extend(&row.get_row_data());
         }
-        return all_vals;
+        all_vals
     }
 }

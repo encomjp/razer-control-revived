@@ -1,6 +1,6 @@
 //! This is duplicated stuff for now, until we have a proper project structure
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 const DEVICE_FILE_DEFAULT: &str = "/usr/share/razercontrol/laptops.json";
 
@@ -18,7 +18,6 @@ pub struct SupportedDevice {
 }
 
 impl SupportedDevice {
-
     pub fn has_feature(&self, feature: &str) -> bool {
         self.features.iter().any(|f| f == feature)
     }
@@ -30,5 +29,4 @@ impl SupportedDevice {
     pub fn has_logo(&self) -> bool {
         self.has_feature("logo")
     }
-
 }
