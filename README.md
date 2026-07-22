@@ -154,6 +154,7 @@ cd razercontrol-revived/razer_control_gui
 | 🖥️ | **GTK4 GUI** | Modern libadwaita interface with separate AC/Battery profiles |
 | ⌨️ | **CLI** | Full command-line control for scripting & automation |
 | 🔄 | **Daemon** | Auto-loads your saved settings on startup |
+| 🛡️ | **Thermal Safety** | PID-gated EC thermal policy with preflight validation, failback state machine, and dGPU resume relatch (Blade 16 2025) |
 
 ---
 
