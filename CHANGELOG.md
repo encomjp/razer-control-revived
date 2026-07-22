@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 (2026-07-22)
+
+### Bug Fixes
+
+- Add missing `bho` feature to Blade 17 2022 (PID 028B)
+
 ## 0.3.1 (2026-07-22)
 
 ### Changes
