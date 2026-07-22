@@ -7,20 +7,9 @@
 - Add thermal safety policy module for Blade 16 2025 (PID 02C6) — pure thermal
   decision engine with PID gating, validated EC protocol types, preflight
   sweep, failback state machine, and dGPU resume relatch. Adapted from
-  @wsquarepa's `nextgen` fork with 40+ unit tests.
-- Add CI workflow (fmt + clippy + test)
-
-## 0.3.2 (2026-07-22)
-
-### Bug Fixes
-
-- Add missing `bho` feature to Blade 17 2022 (PID 028B)
-
-## 0.3.1 (2026-07-22)
-
-### Changes
-
-- Remove separator line from system monitor status bar (Adrian Kozlowski)
+  @wsquarepa's `nextgen` fork with 51 unit tests.
+- Add CI workflow (fmt + clippy + test) — all blocking
+- Remove separator line from system monitor status bar
 
 ### Device Support
 
@@ -31,9 +20,11 @@
 
 ### Bug Fixes
 
+- Add missing `bho` feature to Blade 17 2022 (PID 028B)
 - Fix Blade 14 2025 fan mode handling — thanks @changyun233 (#28)
 - Fix manual fan control for Blade 15 2021 Advanced — thanks @costantinoai (#15)
 - Fix daemon panic on malformed laptops.json hex values
+- rustfmt + clippy cleanup: fixed 261 clippy warnings across entire codebase
 
 ## 0.3.0-rc1 (2026-03-27)
 

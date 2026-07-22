@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.3.0~rc4
+Version:        0.3.3
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -92,6 +92,20 @@ fi
 %systemd_user_postun_with_restart razercontrol.service
 
 %changelog
+* Wed Jul 22 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.3-1
+- Add thermal safety policy module for Blade 16 2025 (PID 02C6) with PID gating
+- Add CI workflow (fmt + clippy + test)
+- Add missing bho feature to Blade 17 2022 (PID 028B)
+- Remove separator line from system monitor status bar
+- Add Razer Blade 18 (2026) support
+- Fix Blade 14 2025 fan mode handling
+- Fix daemon panic on malformed laptops.json hex values
+- Enable per-key RGB for Blade 14 2022
+- Add support for Razer Blade 15 2022 Advanced
+- Fix manual fan control for Blade 15 2021 Advanced
+- Add boost feature and update fan speed for Blade 14 2021
+- rustfmt + clippy cleanup across entire codebase
+
 * Thu Mar 27 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.0~rc1-1
 - Fix KDE Plasma 6 window not receiving focus on Wayland (demanding attention)
   Rename desktop file to com.encomjp.razer-settings.desktop matching GApplication ID
