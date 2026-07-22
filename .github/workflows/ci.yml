@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libdbus-1-dev \
+            libhidapi-dev \
+            libusb-1.0-0-dev \
+            libudev-dev \
+            libglib2.0-dev \
+            libgraphene-1.0-dev \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libgdk-pixbuf-2.0-dev \
+            libsystemd-dev \
+            pkg-config
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check formatting
+        working-directory: razer_control_gui
+        run: cargo fmt --check
+
+      - name: Clippy (deny warnings)
+        working-directory: razer_control_gui
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Tests
+        working-directory: razer_control_gui
+        run: cargo test

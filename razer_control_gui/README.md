@@ -27,7 +27,7 @@ If you find this project useful, please consider supporting its development:
 
 ## 📥 Downloads
 
-**[⬇️ Download Latest Release (v0.3.2)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.3.2)**
+**[⬇️ Download Latest Release (v0.3.3)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.3.3)**
 
 | Package | Best For | Description |
 |---------|----------|-------------|
@@ -37,7 +37,7 @@ If you find this project useful, please consider supporting its development:
 
 ### Fedora / RHEL (Recommended)
 ```bash
-sudo dnf install ./razercontrol-0.3.2-1.fc43.x86_64.rpm
+sudo dnf install ./razercontrol-0.3.3-1.fc43.x86_64.rpm
 ```
 
 ### All Other Distributions (AppImage)
@@ -46,13 +46,13 @@ Install the daemon first, then use the portable AppImage for the GUI:
 
 ```bash
 # 1. Install daemon from tarball
-tar -xzf razer-control-0.3.2-x86_64.tar.gz
-cd razer-control-0.3.2-x86_64
+tar -xzf razer-control-0.3.3-x86_64.tar.gz
+cd razer-control-0.3.3-x86_64
 sudo ./install.sh
 
 # 2. Run the AppImage
-chmod +x RazerControl-0.3.2-x86_64.AppImage
-./RazerControl-0.3.2-x86_64.AppImage
+chmod +x RazerControl-0.3.3-x86_64.AppImage
+./RazerControl-0.3.3-x86_64.AppImage
 ```
 
 > **Note:** Log out and back in (or reboot) after installation for udev rules to take effect.

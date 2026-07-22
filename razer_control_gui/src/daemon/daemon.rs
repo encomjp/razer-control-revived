@@ -18,6 +18,7 @@ mod kbd;
 mod device;
 mod gpu;
 mod battery;
+mod thermal;
 mod dbus_mutter_displayconfig;
 mod dbus_mutter_idlemonitor;
 mod screensaver;
