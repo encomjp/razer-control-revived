@@ -54,7 +54,7 @@ PlasmoidItem {
     property var fanPresets: [0, 3000, 3500, 4000, 4500, 5000]
 
     // --- Update checker ---
-    readonly property string currentVersion: "0.3.0-rc1"
+    readonly property string currentVersion: "0.3.4"
     property string latestVersion: ""
     property string latestUrl: ""
     property bool updateDismissed: false
@@ -725,9 +725,21 @@ PlasmoidItem {
             "    break;; " +
             "  esac; " +
             "done; " +
-            "echo DGPU_TEMP=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null); " +
-            "echo DGPU_POWER=$(nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits 2>/dev/null); " +
-            "echo DGPU_UTIL=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null); " +
+            "for d in /sys/bus/pci/devices/*; do " +
+            "  [ -d \"/sys/module/nvidia\" ] || break; " +
+            "  [ \"$(cat $d/vendor 2>/dev/null)\" = \"0x10de\" ] || continue; " +
+            "  [ \"$(basename $(readlink $d/driver 2>/dev/null))\" = \"nvidia\" ] || continue; " +
+            "  [ \"$(cat $d/power/runtime_status 2>/dev/null)\" = \"active\" ] || continue; " +
+            "  for h in $d/hwmon/hwmon*; do " +
+            "    [ -d \"$h\" ] || continue; " +
+            "    echo DGPU_TEMP=$(cat $h/temp1_input 2>/dev/null); " +
+            "    echo DGPU_POWER=$(cat $h/power1_average 2>/dev/null || cat $h/power1_input 2>/dev/null); " +
+            "    break; " +
+            "  done; " +
+            "  echo DGPU_UTIL=$(cat $d/gpu_busy_percent 2>/dev/null); " +
+            "  echo DGPU_NAME=NVIDIA GPU; " +
+            "  break; " +
+            "done; " +
             "echo BATTERY=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || cat /sys/class/power_supply/BAT1/capacity 2>/dev/null); " +
             "echo AC=$(cat /sys/class/power_supply/AC0/online 2>/dev/null || cat /sys/class/power_supply/ADP0/online 2>/dev/null || cat /sys/class/power_supply/ADP1/online 2>/dev/null); " +
             "echo BAT_STATUS=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null || cat /sys/class/power_supply/BAT1/status 2>/dev/null); " +
@@ -753,18 +765,21 @@ PlasmoidItem {
             "cn=$(grep -m1 \"model name\" /proc/cpuinfo | cut -d: -f2 | sed \"s/^ //; s/ with Radeon Graphics//; s/ w\\/.*//; s/ 16-Core Processor//\"); " +
             "echo CPU_NAME=$cn; " +
             "ig=$(grep -m1 \"model name\" /proc/cpuinfo | sed -nE \"s/.* (Radeon [0-9]+M).*/\\1/p\"); " +
-            "[ -z \"$ig\" ] && ig=$(lspci 2>/dev/null | grep -iE \"VGA|Display|3D\" | grep -iv nvidia | head -1 | sed -E \"s/.*: //; s/ \\(rev .*//; s/Advanced Micro Devices, Inc\\. \\[AMD\\/ATI\\] //; s/Intel Corporation //; s/.*\\[Radeon ([0-9]+M) \\/ [0-9]+M\\].*/Radeon \\1/; s/.*\\[Radeon ([0-9]+M)\\].*/Radeon \\1/\"); " +
-            "dg=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 | sed \"s/ Laptop GPU//\"); " +
+            "[ -z \"$ig\" ] && ig=\"Integrated GPU\"; " +
             "[ -n \"$ig\" ] && echo IGPU_NAME=$ig; " +
-            "[ -n \"$dg\" ] && echo DGPU_NAME=$dg; " +
             "echo CPU_FREQ=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null); " +
             "echo IGPU_FREQ=$(cat /sys/class/drm/card*/device/pp_dpm_sclk 2>/dev/null | grep \"\\*\" | sed -E \"s/.*: ([0-9]+)Mhz.*/\\1/\"); " +
-            "echo DGPU_FREQ=$(nvidia-smi --query-gpu=clocks.current.graphics --format=csv,noheader,nounits 2>/dev/null); " +
             "'"
 
         onNewData: function(sourceName, data) {
             var stdout = data["stdout"];
             if (!stdout) return;
+
+            dgpuTemp = "--";
+            dgpuPower = "--";
+            dgpuUtil = "--";
+            dgpuName = "--";
+            dgpuFreq = "--";
 
             var lines = stdout.split("\n");
             for (var i = 0; i < lines.length; i++) {
@@ -784,7 +799,8 @@ PlasmoidItem {
                         if (!isNaN(t)) cpuTemp = Math.round(t / 1000).toString();
                         break;
                     case "DGPU_TEMP":
-                        if (!isNaN(parseInt(val))) dgpuTemp = parseInt(val).toString();
+                        var dt = parseFloat(val);
+                        if (!isNaN(dt)) dgpuTemp = Math.round(dt / 1000).toString();
                         break;
                     case "IGPU_TEMP":
                         var it = parseInt(val);
@@ -807,7 +823,8 @@ PlasmoidItem {
                         acPower = val;
                         break;
                     case "DGPU_POWER":
-                        if (!isNaN(parseFloat(val))) dgpuPower = parseFloat(val).toFixed(1);
+                        var dp = parseFloat(val);
+                        if (!isNaN(dp)) dgpuPower = (dp / 1000000).toFixed(1);
                         break;
                     case "DGPU_UTIL":
                         if (!isNaN(parseInt(val))) dgpuUtil = parseInt(val).toString();

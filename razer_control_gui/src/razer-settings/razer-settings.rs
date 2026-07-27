@@ -10,6 +10,7 @@ use std::time::Duration;
 #[path = "../comms.rs"]
 mod comms;
 mod error_handling;
+mod gpu_monitor;
 mod tray;
 mod util;
 mod widgets;
@@ -322,39 +323,6 @@ fn get_cpu_temperature() -> Option<f64> {
     None
 }
 
-/// Read dGPU temperature (NVIDIA)
-fn get_gpu_temperature() -> Option<f64> {
-    if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args([
-            "--query-gpu=temperature.gpu",
-            "--format=csv,noheader,nounits",
-        ])
-        .output()
-        && output.status.success()
-        && let Ok(temp_str) = String::from_utf8(output.stdout)
-        && let Ok(temp) = temp_str.trim().parse::<f64>()
-    {
-        return Some(temp);
-    }
-
-    if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
-        for entry in entries.flatten() {
-            let name_path = entry.path().join("name");
-            if let Ok(name) = fs::read_to_string(&name_path)
-                && name.trim() == "nvidia"
-            {
-                let temp_path = entry.path().join("temp1_input");
-                if let Ok(content) = fs::read_to_string(&temp_path)
-                    && let Ok(temp) = content.trim().parse::<f64>()
-                {
-                    return Some(temp / 1000.0);
-                }
-            }
-        }
-    }
-    None
-}
-
 /// Read system/CPU power consumption from RAPL (supports AMD and Intel)
 fn get_system_power() -> Option<f64> {
     let energy_paths = [
@@ -389,37 +357,6 @@ fn get_system_power() -> Option<f64> {
             }
             return None; // Found path but need second reading
         }
-    }
-    None
-}
-
-/// Read NVIDIA dGPU power consumption
-fn get_dgpu_power() -> Option<f64> {
-    if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args(["--query-gpu=power.draw", "--format=csv,noheader,nounits"])
-        .output()
-        && output.status.success()
-        && let Ok(power_str) = String::from_utf8(output.stdout)
-        && let Ok(power) = power_str.trim().parse::<f64>()
-    {
-        return Some(power);
-    }
-    None
-}
-
-/// Read NVIDIA dGPU utilization
-fn get_dgpu_utilization() -> Option<u32> {
-    if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args([
-            "--query-gpu=utilization.gpu",
-            "--format=csv,noheader,nounits",
-        ])
-        .output()
-        && output.status.success()
-        && let Ok(util_str) = String::from_utf8(output.stdout)
-        && let Ok(util) = util_str.trim().parse::<u32>()
-    {
-        return Some(util);
     }
     None
 }
@@ -736,9 +673,10 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
     main_box.append(&bottom_row);
 
     glib::timeout_add_local(Duration::from_secs(2), move || {
+        let nvidia = gpu_monitor::read_nvidia_telemetry();
         let cpu_temp = get_cpu_temperature();
         let igpu_temp = get_igpu_temperature();
-        let dgpu_temp = get_gpu_temperature();
+        let dgpu_temp = nvidia.temperature;
         let on_ac = check_if_running_on_ac_power();
         let ac = on_ac.unwrap_or(true);
         let fan = get_fan_speed(ac);
@@ -749,8 +687,8 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
         let cpu_util = get_cpu_utilization();
         let igpu_pwr = get_igpu_power();
         let igpu_util = get_igpu_utilization();
-        let dgpu_pwr = get_dgpu_power();
-        let dgpu_util = get_dgpu_utilization();
+        let dgpu_pwr = nvidia.power;
+        let dgpu_util = nvidia.utilization;
 
         // CPU
         match cpu_temp {
@@ -811,12 +749,16 @@ fn create_system_monitor(shared_state: tray::SharedSensorState) -> gtk::Box {
         }
 
         // dGPU
-        match dgpu_temp {
-            Some(t) => {
-                dgpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t));
-                dgpu_row.set_visible(true);
+        let dgpu_has = dgpu_temp.is_some() || dgpu_pwr.is_some() || dgpu_util.is_some();
+        dgpu_row.set_visible(dgpu_has);
+        if dgpu_has {
+            match dgpu_temp {
+                Some(t) => {
+                    dgpu_temp_l.set_text(&format!("{:.0}\u{00B0}C", t));
+                    dgpu_temp_l.set_visible(true);
+                }
+                None => dgpu_temp_l.set_visible(false),
             }
-            None => dgpu_row.set_visible(false),
         }
         match dgpu_pwr {
             Some(w) => {

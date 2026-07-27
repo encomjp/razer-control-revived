@@ -33,7 +33,6 @@ pub fn discover_gpus() -> Vec<GpuInfo> {
         }
 
         let vendor = read_sysfs_trimmed(&dev_path.join("vendor"));
-        let device_id = read_sysfs_trimmed(&dev_path.join("device"));
         let pci_slot = entry.file_name().to_string_lossy().to_string();
 
         // Determine driver from symlink
@@ -65,7 +64,7 @@ pub fn discover_gpus() -> Vec<GpuInfo> {
             .unwrap_or_else(|| "unsupported".to_string());
 
         // Build a human-readable name
-        let name = resolve_gpu_name(vendor.as_deref(), device_id.as_deref(), &driver);
+        let name = resolve_gpu_name(vendor.as_deref(), &driver);
 
         gpus.push(GpuInfo {
             name,
@@ -77,7 +76,11 @@ pub fn discover_gpus() -> Vec<GpuInfo> {
     }
 
     // Sort: iGPU first, then dGPU
-    gpus.sort_by(|a, b| a.gpu_type.cmp(&b.gpu_type));
+    gpus.sort_by(|a, b| {
+        a.gpu_type
+            .cmp(&b.gpu_type)
+            .then_with(|| a.pci_slot.cmp(&b.pci_slot))
+    });
     gpus
 }
 
@@ -196,44 +199,7 @@ fn read_sysfs_trimmed(path: &Path) -> Option<String> {
     fs::read_to_string(path).ok().map(|s| s.trim().to_string())
 }
 
-/// Resolve a human-readable GPU name from vendor/device IDs and driver
-fn resolve_gpu_name(vendor: Option<&str>, device_id: Option<&str>, driver: &str) -> String {
-    // Try nvidia-smi for NVIDIA GPUs
-    if vendor == Some(VENDOR_NVIDIA)
-        && let Ok(output) = Command::new("nvidia-smi")
-            .args(["--query-gpu=name", "--format=csv,noheader,nounits"])
-            .output()
-        && output.status.success()
-    {
-        let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        if !name.is_empty() {
-            return name;
-        }
-    }
-
-    // Try lspci for a name
-    if let Some(dev_id) = device_id {
-        // Strip 0x prefix for lspci lookup
-        let vid = vendor.unwrap_or("").trim_start_matches("0x");
-        let did = dev_id.trim_start_matches("0x");
-        if let Ok(output) = Command::new("lspci")
-            .args(["-d", &format!("{}:{}", vid, did), "-mm"])
-            .output()
-            && output.status.success()
-        {
-            let line = String::from_utf8_lossy(&output.stdout);
-            // lspci -mm format: Slot "Class" "Vendor" "Device" ...
-            // Extract the device name (4th quoted field)
-            let fields: Vec<&str> = line.split('"').collect();
-            if fields.len() >= 8 {
-                let vendor_name = fields[3];
-                let device_name = fields[5];
-                return format!("{} {}", vendor_name, device_name);
-            }
-        }
-    }
-
-    // Fallback: vendor + driver
+fn resolve_gpu_name(vendor: Option<&str>, driver: &str) -> String {
     let vendor_name = match vendor {
         Some(VENDOR_NVIDIA) => "NVIDIA",
         Some(VENDOR_AMD) => "AMD",
