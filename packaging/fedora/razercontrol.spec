@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.3.3
+Version:        0.3.4
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -92,6 +92,10 @@ fi
 %systemd_user_postun_with_restart razercontrol.service
 
 %changelog
+* Mon Jul 27 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.4-1
+- Stop NVIDIA telemetry polling from waking runtime-suspended GPUs
+- Replace recurring nvidia-smi calls with fail-closed sysfs monitoring
+
 * Wed Jul 22 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.3-1
 - Add thermal safety policy module for Blade 16 2025 (PID 02C6) with PID gating
 - Add CI workflow (fmt + clippy + test)

@@ -11,7 +11,7 @@
         "Category": "System Information",
         "Id": "com.github.encomjp.razercontrol",
         "License": "GPL-2.0+",
-        "Version": "0.3.0",
+        "Version": "0.3.4",
         "Website": "https://github.com/encomjp/razer-control"
     },
     "X-Plasma-API": "declarativeappletscript",

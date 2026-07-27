@@ -1,6 +1,8 @@
 use std::fs;
 use std::sync::{Arc, Mutex};
 
+use super::gpu_monitor;
+
 #[derive(Default, Clone)]
 pub struct SensorState {
     pub cpu_temp: Option<f64>,
@@ -20,12 +22,13 @@ pub struct SensorState {
 }
 
 impl SensorState {
-    /// Read all sensors directly from sysfs/nvidia-smi
+    /// Read all sensors directly from sysfs
     fn read_fresh() -> Self {
+        let nvidia = gpu_monitor::read_nvidia_telemetry();
         SensorState {
             cpu_temp: read_cpu_temp(),
             igpu_temp: read_igpu_temp(),
-            dgpu_temp: read_dgpu_temp(),
+            dgpu_temp: nvidia.temperature,
             fan_speed: None, // requires daemon, skip in tray
             on_ac: read_ac_power(),
             battery_pct: read_battery_pct(),
@@ -35,8 +38,8 @@ impl SensorState {
             cpu_util: read_cpu_util(),
             igpu_power: read_igpu_power(),
             igpu_util: read_igpu_util(),
-            dgpu_power: read_dgpu_power(),
-            dgpu_util: read_dgpu_util(),
+            dgpu_power: nvidia.power,
+            dgpu_util: nvidia.utilization,
         }
     }
 
@@ -285,22 +288,6 @@ fn read_igpu_temp() -> Option<f64> {
     None
 }
 
-fn read_dgpu_temp() -> Option<f64> {
-    if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args([
-            "--query-gpu=temperature.gpu",
-            "--format=csv,noheader,nounits",
-        ])
-        .output()
-        && output.status.success()
-        && let Ok(s) = String::from_utf8(output.stdout)
-        && let Ok(t) = s.trim().parse::<f64>()
-    {
-        return Some(t);
-    }
-    None
-}
-
 fn read_ac_power() -> Option<bool> {
     for name in ["AC0", "ADP0", "ADP1", "ACAD"] {
         let path = format!("/sys/class/power_supply/{}/online", name);
@@ -351,35 +338,6 @@ fn read_system_power() -> Option<f64> {
             }
             return None;
         }
-    }
-    None
-}
-
-fn read_dgpu_power() -> Option<f64> {
-    if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args(["--query-gpu=power.draw", "--format=csv,noheader,nounits"])
-        .output()
-        && output.status.success()
-        && let Ok(s) = String::from_utf8(output.stdout)
-        && let Ok(p) = s.trim().parse::<f64>()
-    {
-        return Some(p);
-    }
-    None
-}
-
-fn read_dgpu_util() -> Option<u32> {
-    if let Ok(output) = std::process::Command::new("nvidia-smi")
-        .args([
-            "--query-gpu=utilization.gpu",
-            "--format=csv,noheader,nounits",
-        ])
-        .output()
-        && output.status.success()
-        && let Ok(s) = String::from_utf8(output.stdout)
-        && let Ok(u) = s.trim().parse::<u32>()
-    {
-        return Some(u);
     }
     None
 }

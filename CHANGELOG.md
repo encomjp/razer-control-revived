@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.4 (2026-07-27)
+
+### Bug Fixes
+
+- Stop GTK, tray, daemon, and KDE widget telemetry polling from invoking
+  `nvidia-smi` and waking a runtime-suspended NVIDIA dGPU (#32)
+- Read NVIDIA temperature, power, and utilization from sysfs only when the PCI
+  device is bound to the NVIDIA driver and explicitly reports `active`
+
 ## 0.3.3 (2026-07-22)
 
 ### New
