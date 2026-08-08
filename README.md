@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐍 Razer Laptop Control — Revived
+# Razer Laptop Control — Revived
 
 ### Take full control of your Razer Blade on Linux. No kernel modules. No DKMS. Just works.
 
