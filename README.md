@@ -9,6 +9,11 @@
 [![Downloads](https://img.shields.io/github/downloads/encomjp/razer-control-revived/total?style=flat-square&color=orange)](https://github.com/encomjp/razer-control-revived/releases)
 [![Stars](https://img.shields.io/github/stars/encomjp/razer-control-revived?style=flat-square&color=yellow)](https://github.com/encomjp/razer-control-revived/stargazers)
 
+<p align="center">
+  <img src="assets/made-in-europe.svg" alt="Made in Europe · for everyone" width="310">
+</p>
+
+
 Fan curves · Power profiles · CPU/GPU boost · Battery health · RGB effects · System tray — all in one place.
 
 ---
