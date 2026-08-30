@@ -594,11 +594,10 @@ pub fn process_client_request(cmd: comms::DaemonCommand) -> Option<comms::Daemon
                 })
             }
             comms::DaemonCommand::GetBatteryHealthOptimizer() => {
-                d.get_bho_handler()
-                    .map(|result| comms::DaemonResponse::GetBatteryHealthOptimizer {
-                        is_on: (result.0),
-                        threshold: (result.1),
-                    })
+                // Don't abort the whole batched status response when BHO is unsupported.
+                // Return a harmless default so the client still gets every other field.
+                let (is_on, threshold) = d.get_bho_handler().unwrap_or((false, 0));
+                Some(comms::DaemonResponse::GetBatteryHealthOptimizer { is_on, threshold })
             }
             comms::DaemonCommand::GetActualFanRpm => Some(comms::DaemonResponse::GetActualFanRpm {
                 rpm: d.get_actual_fan_rpm(),
