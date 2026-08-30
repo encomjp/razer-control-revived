@@ -152,6 +152,8 @@ cd razercontrol-revived/razer_control_gui
 
 # Build and install (will prompt for sudo)
 ./install.sh install
+# Or, only build and install the daemon and cli
+./install.sh install --no-gui
 ```
 
 After installation, **log out and back in** (or reboot) for udev rules to take effect.

@@ -12,7 +12,11 @@ detect_init_system() {
 
 install() {
     echo "Building the project..."
-    cargo build --release # TODO: The GUI should be optional. At least for now. Before releasing this, it sould be turned into a feature with an explicit cli switch to install it
+    if [[ "$2" != "--no-gui" ]]; then
+        cargo build --release
+    else
+        cargo build --release --no-default-features
+    fi
 
     if [ $? -ne 0 ]; then
         echo "An error occurred while building the project"
@@ -31,23 +35,34 @@ install() {
     esac
 
     # Install the files
-    echo "Installing the files..."
+    echo "Installing cli and service files..."
     mkdir -p ~/.local/share/razercontrol
     sudo bash <<EOF
         mkdir -p /usr/share/razercontrol
         cp target/release/razer-cli /usr/bin/
-        cp target/release/razer-settings /usr/bin/
-        if ls /usr/share/applications/*.desktop 1> /dev/null 2>&1; then
-            # We only install the desktop file if there are already desktop
-            # files on the system
-            cp data/gui/com.encomjp.razer-settings.desktop /usr/share/applications/
-        fi
-        install -Dm644 data/gui/com.github.encomjp.razercontrol.svg /usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg
         cp target/release/daemon /usr/bin/razer-daemon
         cp data/devices/laptops.json /usr/share/razercontrol/
         cp data/udev/99-hidraw-permissions.rules /etc/udev/rules.d/
         udevadm control --reload-rules
 EOF
+
+    if [ $? -ne 0 ]; then
+        echo "An error occurred while installing the files"
+        exit 1
+    fi
+
+    if [[ "$2" != "--no-gui" ]]; then
+        echo "Installing gui files..."
+        sudo bash <<EOF
+            cp target/release/razer-settings /usr/bin/
+            if ls /usr/share/applications/*.desktop 1> /dev/null 2>&1; then
+                # We only install the desktop file if there are already desktop
+                # files on the system
+                cp data/gui/com.encomjp.razer-settings.desktop /usr/share/applications/
+            fi
+            install -Dm644 data/gui/com.github.encomjp.razercontrol.svg /usr/share/icons/hicolor/scalable/apps/com.github.encomjp.razercontrol.svg
+EOF
+    fi
 
     if [ $? -ne 0 ]; then
         echo "An error occurred while installing the files"
@@ -131,13 +146,13 @@ main() {
 
     case $1 in
     install)
-        install
+        install $@
         ;;
     uninstall)
         uninstall
         ;;
     *)
-        echo "Usage: $0 {install|uninstall}"
+        echo "Usage: $0 {install|uninstall} [--no-gui]"
         exit 1
         ;;
     esac

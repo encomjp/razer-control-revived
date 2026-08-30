@@ -5,7 +5,9 @@ authors = ["Adrian Kozowski <kontakt@adrian-kozlowski.de>"]
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
+[features]
+default = ["gui"]
+gui = ["dep:gtk4", "dep:libadwaita"]
 
 [[bin]]
 name = "razer-cli"
@@ -18,6 +20,7 @@ path = "src/daemon/daemon.rs"
 [[bin]]
 name = "razer-settings"
 path = "src/razer-settings/razer-settings.rs"
+required-features = ["gui"]
 
 [lints.rust]
 
@@ -37,8 +40,8 @@ systemstat = "0.2.3"
 hidapi = { version = "2.4.1", default-features = false, features = ["linux-native"] }
 serde-big-array = "0.5.1"
 clap = { version = "4.4.13", features = ["derive"] }
-gtk4 = { version = "0.9", features = ["v4_12"] }
-libadwaita = { version = "0.7", features = ["v1_5"] }
+gtk4 = { version = "0.9", features = ["v4_12"], optional = true }
+libadwaita = { version = "0.7", features = ["v1_5"], optional = true }
 glib = "0.20"
 log = "0.4.22"
 env_logger = "0.11.5"
