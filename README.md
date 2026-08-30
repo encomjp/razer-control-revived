@@ -144,6 +144,28 @@ cd razercontrol-revived/razer_control_gui
 
 ---
 
+## 💻 System Requirements
+
+Prebuilt packages are built on Ubuntu 24.04 / Fedora 41, so they require:
+
+| Runtime library | Minimum |
+|---|---|
+| glibc | 2.39 |
+| GTK 4 | 4.10 |
+| libadwaita | 1.4 |
+
+In practice this means the prebuilt `.deb` / tarball run on **Ubuntu 24.04+, Zorin 18+, Linux Mint 22+, Debian 13+**, and the `.rpm` on **Fedora 41+** (Arch works too).
+
+> **⚠️ Ubuntu 22.04 / Zorin 17 / Linux Mint 21 and older are NOT supported.** They ship glibc 2.35, which cannot load binaries built against glibc 2.39 (`GLIBC_2.39 not found`), and their GTK 4.6 / libadwaita 1.1 are older than what the GUI needs at runtime.
+
+**Building from source** additionally requires:
+- Rust ≥ 1.85 (edition 2024) — install via [rustup](https://rustup.rs/), the distro `rustc` is too old
+- GTK 4 ≥ 4.12 and libadwaita ≥ 1.5 development packages
+
+> **💡 The daemon and CLI have no GTK dependency and can be built on older distros** — handy on 22.04-based systems that can't run the GUI.
+
+---
+
 ## ✨ Features
 
 | | Feature | Description |
