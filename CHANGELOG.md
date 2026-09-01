@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.5 (2026-09-01)
+
+### Bug Fixes
+
+- Fix daemon: don't abort status response when BHO unsupported — Blade Pro 17 (0279) and other devices without `bho` returned `None` for `GetBatteryHealthOptimizer`, breaking the entire status batch and forcing the client into a tight reconnect loop (#35)
+
+### Improvements
+
+- Make `razer-settings` GUI optional — new Cargo `gui` feature and `install.sh` flag allow installing daemon + CLI without GTK4/libadwaita dependencies (#36, thanks @jagozed)
+
+### Docs
+
+- Add European Union 12-gold-star 'Made in Europe · for everyone' banner (`assets/made-in-europe.svg`)
+- Add system requirements (glibc 2.39 / GTK 4.10, Ubuntu 24.04+, Rust 1.85) and update README title formatting
+
 ## 0.3.4 (2026-07-27)
 
 ### Bug Fixes

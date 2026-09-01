@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  APP_VERSION: "0.3.4"
+  APP_VERSION: "0.3.5"
 
 jobs:
   build-rpm:

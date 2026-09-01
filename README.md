@@ -82,7 +82,7 @@ Fan curves · Power profiles · CPU/GPU boost · Battery health · RGB effects �
 
 ```bash
 # Download the .deb from the releases page, then:
-sudo apt install ./razercontrol-revived_0.3.4_amd64.deb
+sudo apt install ./razercontrol-revived_0.3.5_amd64.deb
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
@@ -92,7 +92,7 @@ Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop 
 
 ```bash
 # Download the .rpm from the releases page, then:
-sudo dnf install ./razercontrol-0.3.4-1.fc41.x86_64.rpm
+sudo dnf install ./razercontrol-0.3.5-1.fc41.x86_64.rpm
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.
 </details>
@@ -102,8 +102,8 @@ Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop 
 
 ```bash
 # Download the tarball from the releases page, then:
-tar -xzf razer-control-0.3.4-x86_64.tar.gz
-cd razer-control-0.3.4-x86_64
+tar -xzf razer-control-0.3.5-x86_64.tar.gz
+cd razer-control-0.3.5-x86_64
 sudo ./install.sh
 ```
 Installs everything: daemon, CLI, GUI, systemd service, udev rules, and desktop entry.

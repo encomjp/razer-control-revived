@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.3.4
+Version:        0.3.5
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -92,6 +92,12 @@ fi
 %systemd_user_postun_with_restart razercontrol.service
 
 %changelog
+* Mon Sep 01 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.5-1
+- Fix daemon: don't abort status response when BHO unsupported (Blade Pro 17 etc, #35)
+- Make razer-settings GUI optional via Cargo feature and install.sh flag (#36)
+- Docs: add EU banner, system requirements (glibc 2.39 / GTK 4.10)
+- Update README title formatting
+
 * Mon Jul 27 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.4-1
 - Stop NVIDIA telemetry polling from waking runtime-suspended GPUs
 - Replace recurring nvidia-smi calls with fail-closed sysfs monitoring
