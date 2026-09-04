@@ -167,89 +167,110 @@ pub fn start_keyboard_animator_task() -> JoinHandle<()> {
 
 fn start_screensaver_monitor_task() -> JoinHandle<()> {
     thread::spawn(move || {
-        let dbus_session = match Connection::new_session() {
-            Ok(conn) => conn,
-            Err(e) => {
-                eprintln!(
-                    "Screensaver monitor: D-Bus session unavailable ({}), skipping",
-                    e
-                );
-                return;
-            }
-        };
-        let proxy = dbus_session.with_proxy(
-            "org.gnome.Mutter.DisplayConfig",
-            "/org/gnome/Mutter/DisplayConfig",
-            time::Duration::from_millis(5000),
-        );
-        let _id = proxy.match_signal(
-            |h: dbus_mutter_displayconfig::OrgFreedesktopDBusPropertiesPropertiesChanged,
-             _: &Connection,
-             _: &Message| {
-                let online: Option<&i32> = arg::prop_cast(&h.changed_properties, "PowerSaveMode");
-                if let Some(online) = online {
-                    if *online == 3 {
-                        if let Ok(mut d) = DEV_MANAGER.lock() {
-                            d.light_off();
-                        }
-                    } else if *online == 0
-                        && let Ok(mut d) = DEV_MANAGER.lock()
-                    {
-                        d.restore_light();
-                    }
-                }
-                true
-            },
-        );
-        let proxy_idle = dbus_session.with_proxy(
-            "org.gnome.Mutter.IdleMonitor",
-            "/org/gnome/Mutter/IdleMonitor/Core",
-            time::Duration::from_millis(5000),
-        );
-        let _id = proxy_idle.match_signal(
-            |h: dbus_mutter_idlemonitor::OrgGnomeMutterIdleMonitorWatchFired,
-             _: &Connection,
-             _: &Message| {
-                if let Ok(mut d) = DEV_MANAGER.lock() {
-                    if d.idle_id == h.id {
-                        println!("idle trigger {:?}", h.id);
-                        d.light_off();
-                    } else if d.active_id == h.id {
-                        println!("active trigger {:?}", h.id);
-                        d.restore_light();
-                    }
-                }
-                true
-            },
-        );
-        let proxy = dbus_session.with_proxy(
-            "org.freedesktop.ScreenSaver",
-            "/org/freedesktop/ScreenSaver",
-            time::Duration::from_millis(5000),
-        );
-        let _id = proxy.match_signal(
-            |h: screensaver::OrgFreedesktopScreenSaverActiveChanged,
-             _: &Connection,
-             _: &Message| {
-                println!("ActiveChanged {:?}", h.arg0);
-                if let Ok(mut d) = DEV_MANAGER.lock() {
-                    if h.arg0 {
-                        d.light_off();
-                    } else {
-                        d.restore_light();
-                    }
-                }
-                true
-            },
-        );
-
         loop {
-            if let Ok(res) = dbus_session.process(time::Duration::from_millis(1000)) {
-                if res && let Ok(mut d) = DEV_MANAGER.lock() {
-                    d.add_active_watch(&proxy_idle);
+            let dbus_session = match Connection::new_session() {
+                Ok(conn) => conn,
+                Err(e) => {
+                    eprintln!(
+                        "Screensaver monitor: D-Bus session unavailable ({}), retrying in 5s",
+                        e
+                    );
+                    thread::sleep(time::Duration::from_secs(5));
+                    continue;
                 }
-                if let Ok(mut d) = DEV_MANAGER.lock() {
-                    d.add_idle_watch(&proxy_idle);
+            };
+            let proxy = dbus_session.with_proxy(
+                "org.gnome.Mutter.DisplayConfig",
+                "/org/gnome/Mutter/DisplayConfig",
+                time::Duration::from_millis(5000),
+            );
+            let _id = proxy.match_signal(
+                |h: dbus_mutter_displayconfig::OrgFreedesktopDBusPropertiesPropertiesChanged,
+                 _: &Connection,
+                 _: &Message| {
+                    let online: Option<&i32> =
+                        arg::prop_cast(&h.changed_properties, "PowerSaveMode");
+                    if let Some(online) = online {
+                        if *online == 3 {
+                            if let Ok(mut d) = DEV_MANAGER.lock() {
+                                d.light_off();
+                            }
+                        } else if *online == 0
+                            && let Ok(mut d) = DEV_MANAGER.lock()
+                        {
+                            d.restore_light();
+                        }
+                    }
+                    true
+                },
+            );
+            let proxy_idle = dbus_session.with_proxy(
+                "org.gnome.Mutter.IdleMonitor",
+                "/org/gnome/Mutter/IdleMonitor/Core",
+                time::Duration::from_millis(5000),
+            );
+            let _id = proxy_idle.match_signal(
+                |h: dbus_mutter_idlemonitor::OrgGnomeMutterIdleMonitorWatchFired,
+                 _: &Connection,
+                 _: &Message| {
+                    if let Ok(mut d) = DEV_MANAGER.lock() {
+                        if d.idle_id == h.id {
+                            println!("idle trigger {:?}", h.id);
+                            d.light_off();
+                        } else if d.active_id == h.id {
+                            println!("active trigger {:?}", h.id);
+                            d.restore_light();
+                        }
+                    }
+                    true
+                },
+            );
+            let proxy = dbus_session.with_proxy(
+                "org.freedesktop.ScreenSaver",
+                "/org/freedesktop/ScreenSaver",
+                time::Duration::from_millis(5000),
+            );
+            let _id = proxy.match_signal(
+                |h: screensaver::OrgFreedesktopScreenSaverActiveChanged,
+                 _: &Connection,
+                 _: &Message| {
+                    println!("ActiveChanged {:?}", h.arg0);
+                    if let Ok(mut d) = DEV_MANAGER.lock() {
+                        if h.arg0 {
+                            d.light_off();
+                        } else {
+                            d.restore_light();
+                        }
+                    }
+                    true
+                },
+            );
+
+            if let Ok(mut d) = DEV_MANAGER.lock() {
+                d.idle_id = 0;
+                d.active_id = 0;
+                d.change_idle = true;
+                d.add_idle_watch(&proxy_idle);
+            }
+
+            loop {
+                match dbus_session.process(time::Duration::from_millis(1000)) {
+                    Ok(res) => {
+                        if res && let Ok(mut d) = DEV_MANAGER.lock() {
+                            d.add_active_watch(&proxy_idle);
+                        }
+                        if let Ok(mut d) = DEV_MANAGER.lock() {
+                            d.add_idle_watch(&proxy_idle);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "Screensaver monitor: D-Bus session disconnected ({}), reconnecting...",
+                            e
+                        );
+                        thread::sleep(time::Duration::from_secs(2));
+                        break;
+                    }
                 }
             }
         }
@@ -342,6 +363,7 @@ fn start_battery_monitor_task() -> JoinHandle<()> {
         loop {
             if let Err(e) = dbus_system.process(time::Duration::from_millis(1000)) {
                 eprintln!("Battery monitor D-Bus error: {}", e);
+                thread::sleep(time::Duration::from_secs(1));
             }
         }
     })
