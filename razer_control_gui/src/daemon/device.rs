@@ -309,6 +309,12 @@ impl DeviceManager {
     }
 
     pub fn set_power_mode(&mut self, ac: usize, pwr: u8, cpu: u8, gpu: u8) -> bool {
+        // Reject out-of-range values before they are persisted: the config is
+        // replayed to the EC on every start, AC switch and resume.
+        if pwr > POWER_MODE_CUSTOM || cpu > 3 || gpu > 2 {
+            eprintln!("Rejected power mode {pwr} (cpu {cpu}, gpu {gpu}): out of range");
+            return false;
+        }
         let mut res: bool = false;
         if let Some(config) = self.get_config() {
             config.power[ac].power_mode = pwr;
@@ -1021,11 +1027,28 @@ impl RazerLaptop {
     }
 
     pub fn set_power_mode(&mut self, mode: u8, cpu_boost: u8, gpu_boost: u8) -> bool {
-        if mode <= 3 {
-            self.power = mode;
+        if mode == POWER_MODE_SILENT {
+            self.power = power_mode_to_ec(mode);
+            // Only a readback that names another mode counts as a rejection;
+            // an EC that can't answer the read keeps the accepted write.
+            let accepted = self.set_power(0x01)
+                && self
+                    .read_zone_fan_state(0x01)
+                    .is_none_or(|(mode_byte, _)| mode_byte == EC_POWER_MODE_SILENT);
+            if !accepted {
+                // Older ECs have no Silent profile (and current ones only take
+                // it on AC): emulate it with Custom and both boosts at Low
+                // instead of leaving the previous profile. The config keeps
+                // Silent so the next AC switch or restart retries 0x05.
+                eprintln!("EC rejected Silent (0x05), falling back to Custom Low/Low");
+                return self.set_power_mode(POWER_MODE_CUSTOM, 0, 0);
+            }
+            return self.set_power(0x02);
+        } else if mode < POWER_MODE_CUSTOM {
+            self.power = power_mode_to_ec(mode);
             self.set_power(0x01);
             self.set_power(0x02);
-        } else if mode == 4 {
+        } else if mode == POWER_MODE_CUSTOM {
             self.power = mode;
             self.fan_rpm = 0;
             self.get_power_mode(0x01);
@@ -1229,6 +1252,23 @@ impl RazerLaptop {
     }
 }
 
+/// Power profile indices as stored in the config and shown by the frontends
+/// (0=Balanced, 1=Gaming, 2=Creator, 3=Silent, 4=Custom).
+const POWER_MODE_SILENT: u8 = 3;
+const POWER_MODE_CUSTOM: u8 = 4;
+/// EC wire value for Silent. Synapse sends 0x05 (Blade 16 2025 USB captures,
+/// Blade 14 2023 #39); 0x03 is Battery Saver on current ECs and an undefined
+/// mode on older ones, so the profile index must not be sent as-is.
+const EC_POWER_MODE_SILENT: u8 = 0x05;
+
+/// Translate a profile index into the byte the EC expects in `0x0d/0x02`.
+fn power_mode_to_ec(mode: u8) -> u8 {
+    match mode {
+        POWER_MODE_SILENT => EC_POWER_MODE_SILENT,
+        other => other,
+    }
+}
+
 // top bit flags whether battery health optimization is on or off
 // bottom bits are the actual threshold that it is set to
 #[allow(dead_code)]
@@ -1241,4 +1281,27 @@ fn bho_to_byte(is_on: bool, threshold: u8) -> u8 {
         return threshold | 0b1000_0000;
     }
     threshold
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn silent_is_sent_as_ec_mode_5() {
+        assert_eq!(power_mode_to_ec(POWER_MODE_SILENT), 0x05);
+    }
+
+    #[test]
+    fn other_profiles_keep_their_wire_value() {
+        assert_eq!(power_mode_to_ec(0), 0);
+        assert_eq!(power_mode_to_ec(1), 1);
+        assert_eq!(power_mode_to_ec(2), 2);
+        assert_eq!(power_mode_to_ec(POWER_MODE_CUSTOM), 4);
+    }
+
+    #[test]
+    fn no_profile_is_sent_as_battery_saver() {
+        assert!((0..=POWER_MODE_CUSTOM).all(|mode| power_mode_to_ec(mode) != 0x03));
+    }
 }

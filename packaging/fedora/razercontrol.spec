@@ -1,5 +1,5 @@
 Name:           razercontrol-revived
-Version:        0.3.5
+Version:        0.3.6
 Release:        1%{?dist}
 Summary:        Razer Laptop Control - Revived
 
@@ -92,6 +92,12 @@ fi
 %systemd_user_postun_with_restart razercontrol.service
 
 %changelog
+* Sat Sep 26 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.6-1
+- Fix Silent power mode: send EC value 0x05 instead of 0x03, fall back to Custom Low/Low (#39)
+- Fix daemon CPU spin after session D-Bus restart (#37)
+- Reject out-of-range power mode values in the daemon
+- Report power mode failures in razer-cli; fix package download docs
+
 * Mon Sep 01 2026 EncomJP <encomjp@users.noreply.github.com> - 0.3.5-1
 - Fix daemon: don't abort status response when BHO unsupported (Blade Pro 17 etc, #35)
 - Make razer-settings GUI optional via Cargo feature and install.sh flag (#36)
