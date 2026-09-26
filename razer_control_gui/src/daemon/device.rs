@@ -1035,14 +1035,15 @@ impl RazerLaptop {
                 && self
                     .read_zone_fan_state(0x01)
                     .is_none_or(|(mode_byte, _)| mode_byte == EC_POWER_MODE_SILENT);
-            if accepted {
-                self.set_power(0x02);
-            } else {
-                // Older ECs have no Silent profile: emulate it with Custom and
-                // both boosts at Low instead of leaving the previous profile.
+            if !accepted {
+                // Older ECs have no Silent profile (and current ones only take
+                // it on AC): emulate it with Custom and both boosts at Low
+                // instead of leaving the previous profile. The config keeps
+                // Silent so the next AC switch or restart retries 0x05.
                 eprintln!("EC rejected Silent (0x05), falling back to Custom Low/Low");
                 return self.set_power_mode(POWER_MODE_CUSTOM, 0, 0);
             }
+            return self.set_power(0x02);
         } else if mode < POWER_MODE_CUSTOM {
             self.power = power_mode_to_ec(mode);
             self.set_power(0x01);

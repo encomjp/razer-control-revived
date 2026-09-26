@@ -705,7 +705,7 @@ fn write_pwr_mode(ac: usize, pwr_mode: u8, cpu_mode: Option<u8>, gpu_mode: Optio
     }) {
         Some(comms::DaemonResponse::SetPowerMode { result: false }) => {
             eprintln!("Daemon failed to apply the power mode");
-            read_power_mode(ac);
+            std::process::exit(1);
         }
         Some(_) => read_power_mode(ac),
         None => Cli::command()
