@@ -703,6 +703,10 @@ fn write_pwr_mode(ac: usize, pwr_mode: u8, cpu_mode: Option<u8>, gpu_mode: Optio
         cpu: cm,
         gpu: gm,
     }) {
+        Some(comms::DaemonResponse::SetPowerMode { result: false }) => {
+            eprintln!("Daemon failed to apply the power mode");
+            read_power_mode(ac);
+        }
         Some(_) => read_power_mode(ac),
         None => Cli::command()
             .error(

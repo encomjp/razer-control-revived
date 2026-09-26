@@ -27,32 +27,30 @@ If you find this project useful, please consider supporting its development:
 
 ## 📥 Downloads
 
-**[⬇️ Download Latest Release (v0.3.5)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.3.5)**
+**[⬇️ Download Latest Release (v0.3.6)](https://github.com/encomjp/razer-control-revived/releases/tag/v0.3.6)**
 
 | Package | Best For | Description |
 |---------|----------|-------------|
-| `razercontrol-*.rpm` | **Fedora / RHEL** | Complete RPM package - installs everything |
-| `RazerControl-*.AppImage` | **All distros** | Universal portable GUI (needs daemon) |
-| `razer-control-*.tar.gz` | **Manual install** | Tarball with install script |
+| `razercontrol-revived_*_amd64.deb` | **Debian / Ubuntu** | Complete DEB package - installs everything |
+| `razercontrol-revived-*.rpm` | **Fedora / RHEL** | Complete RPM package - installs everything |
+| `razer-control-*.tar.gz` | **All other distros** | Tarball with install script |
 
-### Fedora / RHEL (Recommended)
+### Debian / Ubuntu
 ```bash
-sudo dnf install ./razercontrol-0.3.5-1.fc43.x86_64.rpm
+sudo apt install ./razercontrol-revived_0.3.6_amd64.deb
 ```
 
-### All Other Distributions (AppImage)
+### Fedora / RHEL
+```bash
+sudo dnf install ./razercontrol-revived-0.3.6-1.fc41.x86_64.rpm
+```
 
-Install the daemon first, then use the portable AppImage for the GUI:
+### All Other Distributions (tarball)
 
 ```bash
-# 1. Install daemon from tarball
-tar -xzf razer-control-0.3.5-x86_64.tar.gz
-cd razer-control-0.3.5-x86_64
+tar -xzf razer-control-0.3.6-x86_64.tar.gz
+cd razer-control-0.3.6-x86_64
 sudo ./install.sh
-
-# 2. Run the AppImage
-chmod +x RazerControl-0.3.5-x86_64.AppImage
-./RazerControl-0.3.5-x86_64.AppImage
 ```
 
 > **Note:** Log out and back in (or reboot) after installation for udev rules to take effect.

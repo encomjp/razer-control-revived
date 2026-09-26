@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.6 (2026-09-26)
+
+### Bug Fixes
+
+- **Silent power mode sent the wrong EC value** — Silent was sent to the EC as
+  `0x03` (Battery Saver on current ECs, undefined on older ones), so the CPU ran
+  uncapped and Silent behaved like Gaming. It is now sent as `0x05`, the value
+  Synapse uses. If the EC doesn't latch `0x05`, the daemon falls back to Custom
+  with CPU/GPU boost Low instead of leaving the previous profile active. Thanks
+  @Astros52 for the measurements (#39)
+- Fix daemon 100% CPU spin after the user session D-Bus restarts (GNOME
+  logout/login) — the daemon now reconnects (#37)
+- Daemon rejects out-of-range power mode / boost values instead of persisting
+  them to the config and replaying them to the EC on every start
+- `razer-cli write power` now reports when the daemon fails to apply a mode
+
+### Docs
+
+- Fix package download instructions: correct RPM file name
+  (`razercontrol-revived-*.fc41`), add the `.deb`, drop the AppImage that
+  releases no longer ship
+
 ## 0.3.5 (2026-09-01)
 
 ### Bug Fixes
